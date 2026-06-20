@@ -15,6 +15,9 @@ export const handlers = [
   http.get(`${BASE}/trips/:id`, ({ params }) =>
     HttpResponse.json({ id: params.id, name: "Norway", destination: "Norway", daysMin: 7, daysMax: 10, routeType: "open" }),
   ),
+  http.get(`${BASE}/trips/:id/intake/messages`, () =>
+    HttpResponse.json([]),
+  ),
   http.get(`${BASE}/trips/:id/profile`, () =>
     HttpResponse.json({
       partyAdults: 2, partyKids: 1, kidsAges: [7], maxHikeKm: 5, maxHikeElevationM: 200,
