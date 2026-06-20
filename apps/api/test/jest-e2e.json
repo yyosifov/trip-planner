@@ -4,9 +4,9 @@
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.ts$": "ts-jest"
   },
-  "setupFiles": ["dotenv/config"],
+  "setupFiles": ["<rootDir>/env-setup.js"],
   "moduleNameMapper": {
     "^@trip/shared$": "<rootDir>/../../../packages/shared/src/index.ts"
   }

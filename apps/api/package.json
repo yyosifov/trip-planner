@@ -72,7 +72,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@trip/shared$": "<rootDir>/../../packages/shared/src/index.ts"
+      "^@trip/shared$": "<rootDir>/../../../packages/shared/src/index.ts"
     }
   }
 }

@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Trip {
+  id              String           @id @default(cuid())
+  name            String
+  destination     String
+  dateWindowStart DateTime?
+  dateWindowEnd   DateTime?
+  daysMin         Int
+  daysMax         Int
+  routeType       String
+  notes           String           @default("")
+  createdAt       DateTime         @default(now())
+  profile         TravelerProfile?
+  messages        IntakeMessage[]
+  places          Place[]
+  days            ItineraryDay[]
+  researchRuns    ResearchRun[]
+}
+
+model TravelerProfile {
+  id                String  @id @default(cuid())
+  trip              Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId            String  @unique
+  partyAdults       Int     @default(0)
+  partyKids         Int     @default(0)
+  kidsAges          Json    @default("[]")
+  maxHikeKm         Float?
+  maxHikeElevationM Float?
+  pace              String?
+  interests         String[] @default([])
+  dislikes          String[] @default([])
+  extra             Json    @default("{}")
+  completed         Boolean @default(false)
+}
+
+model IntakeMessage {
+  id        String   @id @default(cuid())
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId    String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Place {
+  id               String          @id @default(cuid())
+  trip             Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId           String
+  name             String
+  category         String
+  description      String          @default("")
+  lat              Float?
+  lng              Float?
+  photoUrl         String?
+  sourceUrl        String?
+  sourceType       String          @default("web")
+  estDurationMin   Int             @default(0)
+  difficulty       String          @default("easy")
+  kidSuitability   Int             @default(3)
+  weatherDependent Boolean         @default(false)
+  tags             String[]        @default([])
+  raw              Json            @default("{}")
+  status           String          @default("new")
+  createdAt        DateTime        @default(now())
+  items            ItineraryItem[]
+}
+
+model ItineraryDay {
+  id       String          @id @default(cuid())
+  trip     Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId   String
+  dayIndex Int
+  date     DateTime?
+  baseCity String          @default("")
+  items    ItineraryItem[]
+}
+
+model ItineraryItem {
+  id              String       @id @default(cuid())
+  day             ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  dayId           String
+  place           Place        @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  placeId         String
+  sortOrder       Int          @default(0)
+  timeSlot        String?
+  isBackup        Boolean      @default(false)
+  backupForItemId String?
+}
+
+model ResearchRun {
+  id        String   @id @default(cuid())
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId    String
+  queries   Json     @default("[]")
+  provider  String   @default("brave+gemini")
+  status    String   @default("running")
+  stats     Json     @default("{}")
+  error     String?
+  createdAt DateTime @default(now())
+}
