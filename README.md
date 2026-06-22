@@ -30,14 +30,17 @@ pnpm --filter api exec prisma migrate deploy
 ## Running locally
 
 ```bash
-# Terminal 1 — API (port 3000)
-pnpm --filter api start:dev
-
-# Terminal 2 — Web (port 5173)
-pnpm --filter web dev
+pnpm dev
 ```
 
-Open http://localhost:5173
+Starts both API (port 3000) and web (port 5173) with colored output. Open http://localhost:5173
+
+Or separately:
+
+```bash
+pnpm run dev:api   # API only
+pnpm run dev:web   # Web only
+```
 
 ## Environment variables
 

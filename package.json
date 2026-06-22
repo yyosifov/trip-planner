@@ -2,9 +2,13 @@
   "name": "trip-planner",
   "private": true,
   "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"pnpm run dev:api\" \"pnpm run dev:web\"",
     "test": "pnpm -r test",
     "build": "pnpm -r build",
     "dev:api": "pnpm --filter api start:dev",
     "dev:web": "pnpm --filter web dev"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
   }
 }
