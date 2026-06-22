@@ -3,3 +3,4 @@ export * from "./profile";
 export * from "./place";
 export * from "./trip";
 export * from "./itinerary";
+export * from "./wildlife";
