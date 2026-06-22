@@ -9,20 +9,15 @@ export class MapsProvider implements MapsPort {
   ) {}
 
   async geocode(query: string) {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${this.key}`;
-    const res = await this.fetchFn(url);
-    const body = (await res.json()) as { status: string; results: { geometry: { location: { lat: number; lng: number } } }[] };
-    if (body.status !== "OK" || !body.results?.length) return null;
-    const loc = body.results[0].geometry.location;
-    return { lat: loc.lat, lng: loc.lng };
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+    const res = await this.fetchFn(url, { headers: { "User-Agent": "trip-planner-app/1.0" } });
+    const body = (await res.json()) as { lat: string; lon: string }[];
+    if (!body.length) return null;
+    return { lat: parseFloat(body[0].lat), lng: parseFloat(body[0].lon) };
   }
 
-  async photoUrl(query: string) {
-    const find = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(query)}&inputtype=textquery&fields=photos&key=${this.key}`;
-    const res = await this.fetchFn(find);
-    const body = (await res.json()) as { candidates?: { photos?: { photo_reference: string }[] }[] };
-    const ref = body.candidates?.[0]?.photos?.[0]?.photo_reference;
-    if (!ref) return null;
-    return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=600&photo_reference=${ref}&key=${this.key}`;
+  async photoUrl(_query: string) {
+    // Google Places Photo API requires billing — skipped for now
+    return null;
   }
 }

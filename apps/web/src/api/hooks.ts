@@ -25,6 +25,8 @@ export interface Place {
   weatherDependent: boolean;
   status: PlaceStatus;
   estDurationMin: number;
+  tags: string[];
+  sourceUrl: string | null;
 }
 export interface BoardItem { id: string; place: Place; timeSlot?: string; }
 export interface BoardDay { id: string; dayIndex: number; baseCity: string; items: BoardItem[]; }
@@ -57,6 +59,17 @@ export function usePostIntake(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["profile", id] });
       qc.invalidateQueries({ queryKey: ["messages", id] });
+    },
+  });
+}
+
+export function useClearMessages(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.del(`/trips/${id}/intake/messages`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["messages", id] });
+      qc.invalidateQueries({ queryKey: ["profile", id] });
     },
   });
 }
