@@ -8,8 +8,8 @@ import { MapsProvider } from "./maps.provider";
 @Module({
   providers: [
     { provide: GEMINI, useClass: GeminiProvider },
-    { provide: SEARCH, useClass: BraveProvider },
-    { provide: MAPS, useClass: MapsProvider },
+    { provide: SEARCH, useFactory: () => new BraveProvider() },
+    { provide: MAPS, useFactory: () => new MapsProvider() },
   ],
   exports: [GEMINI, SEARCH, MAPS],
 })

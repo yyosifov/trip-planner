@@ -1,9 +1,7 @@
-import { Injectable } from "@nestjs/common";
 import { MapsPort } from "./ports";
 
 type FetchFn = typeof fetch;
 
-@Injectable()
 export class MapsProvider implements MapsPort {
   constructor(
     private key = process.env.GOOGLE_MAPS_API_KEY ?? "",

@@ -1,9 +1,7 @@
-import { Injectable } from "@nestjs/common";
 import { SearchPort, SearchResult } from "./ports";
 
 type FetchFn = typeof fetch;
 
-@Injectable()
 export class BraveProvider implements SearchPort {
   constructor(
     private key = process.env.BRAVE_API_KEY ?? "",
