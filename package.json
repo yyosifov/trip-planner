@@ -7,12 +7,13 @@
     "build": "pnpm -r build",
     "dev:api": "pnpm --filter api start:dev",
     "dev:web": "pnpm --filter web dev",
-    "db:migrate": "pnpm --filter api exec prisma migrate dev",
-    "db:deploy": "pnpm --filter api exec prisma migrate deploy",
-    "db:studio": "pnpm --filter api exec prisma studio",
-    "db:reset": "pnpm --filter api exec prisma migrate reset"
+    "db:migrate": "dotenv -e .env -- pnpm --filter api exec prisma migrate dev",
+    "db:deploy": "dotenv -e .env -- pnpm --filter api exec prisma migrate deploy",
+    "db:studio": "dotenv -e .env -- pnpm --filter api exec prisma studio",
+    "db:reset": "dotenv -e .env -- pnpm --filter api exec prisma migrate reset"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3"
+    "concurrently": "^10.0.3",
+    "dotenv-cli": "^11.0.0"
   }
 }
