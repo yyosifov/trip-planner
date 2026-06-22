@@ -6,7 +6,11 @@
     "test": "pnpm -r test",
     "build": "pnpm -r build",
     "dev:api": "pnpm --filter api start:dev",
-    "dev:web": "pnpm --filter web dev"
+    "dev:web": "pnpm --filter web dev",
+    "db:migrate": "pnpm --filter api exec prisma migrate dev",
+    "db:deploy": "pnpm --filter api exec prisma migrate deploy",
+    "db:studio": "pnpm --filter api exec prisma studio",
+    "db:reset": "pnpm --filter api exec prisma migrate reset"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

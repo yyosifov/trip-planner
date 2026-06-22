@@ -24,7 +24,7 @@ cp .env.example .env
 # Edit .env — add GEMINI_API_KEY, BRAVE_API_KEY, optionally GOOGLE_MAPS_API_KEY
 
 # 4. Run migrations
-pnpm --filter api exec prisma migrate deploy
+pnpm db:deploy
 ```
 
 ## Running locally
@@ -40,6 +40,15 @@ Or separately:
 ```bash
 pnpm run dev:api   # API only
 pnpm run dev:web   # Web only
+```
+
+## Database commands
+
+```bash
+pnpm db:deploy   # apply migrations (production-safe, no prompt)
+pnpm db:migrate  # create + apply new migration (dev, interactive)
+pnpm db:studio   # open Prisma Studio GUI at http://localhost:5555
+pnpm db:reset    # drop + recreate + re-seed (dev only, destructive)
 ```
 
 ## Environment variables
