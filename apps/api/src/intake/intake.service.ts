@@ -9,6 +9,18 @@ the max hike distance (km) and elevation gain (m) the group can handle, preferre
 (relaxed/moderate/packed), interests, and dislikes. When you have all of these, reply with
 a short confirmation that starts with the token READY.`;
 
+function hasAllFields(p: Record<string, unknown>): boolean {
+  return (
+    (p.partyAdults as number) >= 1 &&
+    p.maxHikeKm != null &&
+    p.maxHikeElevationM != null &&
+    p.pace != null &&
+    Array.isArray(p.interests) && (p.interests as unknown[]).length > 0 &&
+    Array.isArray(p.kidsAges) &&
+    (p.partyKids === 0 || (p.kidsAges as unknown[]).length === (p.partyKids as number))
+  );
+}
+
 const PROFILE_SCHEMA = {
   type: "object",
   properties: {
@@ -59,7 +71,7 @@ export class IntakeService {
       maxHikeElevationM: null,
       pace: null,
       ...(raw as object),
-      completed: reply.trimStart().startsWith("READY"),
+      completed: /\bready\b/i.test(reply.slice(0, 120)) || hasAllFields(raw as Record<string, unknown>),
     });
 
     const profile = await this.persistProfile(tripId, parsed);
@@ -120,5 +132,10 @@ export class IntakeService {
       orderBy: { createdAt: "asc" },
       select: { role: true, content: true },
     });
+  }
+
+  async clearMessages(tripId: string) {
+    await this.prisma.intakeMessage.deleteMany({ where: { tripId } });
+    await this.prisma.travelerProfile.deleteMany({ where: { tripId } });
   }
 }

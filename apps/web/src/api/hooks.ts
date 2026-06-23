@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { CreateTripInput, TravelerProfile, PlaceStatus } from "@trip/shared";
+import type { CreateTripInput, TravelerProfile, PlaceStatus, WildlifeData } from "@trip/shared";
 
 export interface Trip {
   id: string;
@@ -25,6 +25,8 @@ export interface Place {
   weatherDependent: boolean;
   status: PlaceStatus;
   estDurationMin: number;
+  tags: string[];
+  sourceUrl: string | null;
 }
 export interface BoardItem { id: string; place: Place; timeSlot?: string; }
 export interface BoardDay { id: string; dayIndex: number; baseCity: string; items: BoardItem[]; }
@@ -57,6 +59,17 @@ export function usePostIntake(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["profile", id] });
       qc.invalidateQueries({ queryKey: ["messages", id] });
+    },
+  });
+}
+
+export function useClearMessages(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.del(`/trips/${id}/intake/messages`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["messages", id] });
+      qc.invalidateQueries({ queryKey: ["profile", id] });
     },
   });
 }
@@ -108,5 +121,26 @@ export function useSuggestBackups(tripId: string) {
   return useMutation({
     mutationFn: (dayId: string) =>
       api.post<Place[]>(`/trips/${tripId}/days/${dayId}/backups`),
+  });
+}
+
+export interface WildlifeReport {
+  id: string;
+  tripId: string;
+  data: WildlifeData;
+  generatedAt: string;
+}
+
+export const useWildlife = (id: string) =>
+  useQuery({
+    queryKey: ["wildlife", id],
+    queryFn: () => api.get<WildlifeReport | null>(`/trips/${id}/wildlife`),
+  });
+
+export function useGenerateWildlife(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<WildlifeReport>(`/trips/${id}/wildlife`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["wildlife", id] }),
   });
 }

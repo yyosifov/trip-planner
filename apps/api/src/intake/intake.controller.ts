@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, Post } from "@nestjs/common";
 import { IntakeService } from "./intake.service";
 
 @Controller("trips/:id")
@@ -13,6 +13,12 @@ export class IntakeController {
   @Get("intake/messages")
   messages(@Param("id") id: string) {
     return this.intake.getMessages(id);
+  }
+
+  @Delete("intake/messages")
+  @HttpCode(204)
+  clearMessages(@Param("id") id: string) {
+    return this.intake.clearMessages(id);
   }
 
   @Get("profile")
