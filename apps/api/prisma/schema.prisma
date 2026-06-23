@@ -23,7 +23,19 @@ model Trip {
   places          Place[]
   days            ItineraryDay[]
   researchRuns    ResearchRun[]
-  wildlifeReport  WildlifeReport?
+  wildlifeReport        WildlifeReport?
+  maxDrivingHoursPerDay Float?
+  waypoints             Waypoint[]
+}
+
+model Waypoint {
+  id     String @id @default(cuid())
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId String
+  city   String
+  order  Int
+  lat    Float?
+  lng    Float?
 }
 
 model TravelerProfile {
@@ -70,6 +82,7 @@ model Place {
   tags             String[]        @default([])
   raw              Json            @default("{}")
   status           String          @default("new")
+  segment          String?
   createdAt        DateTime        @default(now())
   items            ItineraryItem[]
 }
