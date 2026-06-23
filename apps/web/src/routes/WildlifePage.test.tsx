@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { http, HttpResponse } from "msw";
+import { server } from "../test/setup";
 import { WildlifePage } from "./WildlifePage";
 
 function wrap() {
@@ -31,11 +33,31 @@ describe("WildlifePage", () => {
     expect(screen.getByText(/Fløyen/)).toBeTruthy();
   });
 
-  it("has a generate button", async () => {
+  it("has a generate button and fires the POST on click", async () => {
     wrap();
     const btn = await screen.findByRole("button", { name: /generate|regenerate/i });
     expect(btn).toBeTruthy();
+
+    let posted = false;
+    server.use(
+      http.post("http://localhost:3000/trips/:id/wildlife", () => {
+        posted = true;
+        return HttpResponse.json(
+          { id: "w1", tripId: "t1", generatedAt: "2026-06-22T10:00:00.000Z", data: { summary: "Generated.", species: [], seasonal: [], safety: [], perPlace: [] } },
+          { status: 201 },
+        );
+      }),
+    );
     fireEvent.click(btn);
-    expect(screen.getByText(/White-tailed eagle/)).toBeTruthy();
+    await waitFor(() => expect(posted).toBe(true));
+  });
+
+  it("shows the empty state when there is no report", async () => {
+    server.use(
+      http.get("http://localhost:3000/trips/:id/wildlife", () => new HttpResponse(null, { status: 200 })),
+    );
+    wrap();
+    expect(await screen.findByText(/No wildlife info yet/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /generate wildlife info/i })).toBeTruthy();
   });
 });

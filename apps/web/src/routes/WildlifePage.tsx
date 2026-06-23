@@ -15,7 +15,7 @@ function SpeciesCard({ s }: { s: SpeciesToSpot }) {
     <div style={{ border: "1px solid #eee", borderRadius: 8, padding: "8px 12px", marginBottom: 6 }}>
       <div style={{ fontWeight: 600 }}>
         {TYPE_ICON[s.type] ?? "🐾"} {s.name}{" "}
-        <span title={`Kid appeal: ${s.kidAppeal}/5`}>{"★".repeat(s.kidAppeal)}{"☆".repeat(5 - s.kidAppeal)}</span>
+        <span title={`Kid appeal: ${s.kidAppeal}/5`}>{"★".repeat(Math.max(0, s.kidAppeal))}{"☆".repeat(Math.max(0, 5 - s.kidAppeal))}</span>
       </div>
       {s.funFact && <div style={{ fontSize: 13, color: "#555" }}>{s.funFact}</div>}
     </div>
