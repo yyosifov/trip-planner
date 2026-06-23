@@ -1,3 +1,4 @@
+import { WildlifeData } from "@trip/shared";
 import { WildlifeService } from "./wildlife.service";
 
 const prismaMock = {
@@ -19,8 +20,8 @@ describe("WildlifeService", () => {
     });
     prismaMock.place.findMany.mockResolvedValue([{ id: "p1", name: "Fløyen", category: "hike" }]);
     prismaMock.travelerProfile.findUnique.mockResolvedValue({ kidsAges: [7] });
-    prismaMock.wildlifeReport.upsert.mockImplementation(({ create, update }: never) =>
-      Promise.resolve({ id: "w1", tripId: "t1", ...(create ?? update) }),
+    prismaMock.wildlifeReport.upsert.mockImplementation((args: { create?: any; update?: any }) =>
+      Promise.resolve({ id: "w1", tripId: "t1", ...(args.create ?? args.update) }),
     );
   });
 
@@ -38,15 +39,17 @@ describe("WildlifeService", () => {
     expect(prismaMock.place.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { tripId: "t1", category: { in: ["hike", "sight", "beach", "activity"] } } }),
     );
-    expect(report.data.species[0].name).toBe("Golden eagle");
+    const data1 = report.data as WildlifeData;
+    expect(data1.species[0].name).toBe("Golden eagle");
     expect(prismaMock.wildlifeReport.upsert).toHaveBeenCalled();
   });
 
   it("falls back to an empty report when Gemini returns junk", async () => {
     geminiMock.extractJson.mockResolvedValue({ species: [{ type: "bird" }] }); // missing required name
     const report = await svc.generate("t1");
-    expect(report.data.species).toEqual([]);
-    expect(report.data.summary).toBe("");
+    const data = report.data as WildlifeData;
+    expect(data.species).toEqual([]);
+    expect(data.summary).toBe("");
   });
 
   it("get() reads the stored report", async () => {

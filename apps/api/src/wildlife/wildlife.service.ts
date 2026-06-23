@@ -64,12 +64,14 @@ export class WildlifeService {
   ) {}
 
   async generate(tripId: string) {
-    const trip = await this.prisma.trip.findUnique({ where: { id: tripId } });
-    const places = await this.prisma.place.findMany({
-      where: { tripId, category: { in: OUTDOOR_CATEGORIES } },
-      select: { id: true, name: true, category: true },
-    });
-    const profile = await this.prisma.travelerProfile.findUnique({ where: { tripId } });
+    const [trip, places, profile] = await Promise.all([
+      this.prisma.trip.findUnique({ where: { id: tripId } }),
+      this.prisma.place.findMany({
+        where: { tripId, category: { in: OUTDOOR_CATEGORIES } },
+        select: { id: true, name: true, category: true },
+      }),
+      this.prisma.travelerProfile.findUnique({ where: { tripId } }),
+    ]);
 
     const prompt = buildWildlifePrompt({
       destination: trip?.destination ?? "",
