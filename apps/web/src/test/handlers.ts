@@ -36,6 +36,32 @@ export const handlers = [
   http.post(`${BASE}/trips/:id/research`, () =>
     HttpResponse.json({ created: 1 }, { status: 201 }),
   ),
+  http.get(`${BASE}/trips/:id/wildlife`, () =>
+    HttpResponse.json({
+      id: "w1",
+      tripId: "t1",
+      generatedAt: "2026-06-22T10:00:00.000Z",
+      data: {
+        summary: "Coastal Norwegian fauna with seabirds and the occasional moose.",
+        species: [
+          { name: "White-tailed eagle", type: "bird", funFact: "Europe's largest eagle", kidAppeal: 5 },
+        ],
+        seasonal: [{ window: "summer", note: "Puffins nest on the cliffs" }],
+        safety: [{ animal: "Tick", risk: "medium", danger: "can carry disease", whatToDo: "check skin after hikes" }],
+        perPlace: [
+          { placeId: "p1", placeName: "Fløyen", species: [
+            { name: "Red squirrel", type: "mammal", funFact: "tufted ears", kidAppeal: 4 },
+          ], safety: [] },
+        ],
+      },
+    }),
+  ),
+  http.post(`${BASE}/trips/:id/wildlife`, () =>
+    HttpResponse.json({
+      id: "w1", tripId: "t1", generatedAt: "2026-06-22T10:00:00.000Z",
+      data: { summary: "Generated.", species: [], seasonal: [], safety: [], perPlace: [] },
+    }, { status: 201 }),
+  ),
   http.get(`${BASE}/trips/:id/places`, () =>
     HttpResponse.json([
       {
