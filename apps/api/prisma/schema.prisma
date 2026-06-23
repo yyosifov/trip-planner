@@ -128,3 +128,18 @@ model WildlifeReport {
   data        Json     @default("{}")
   generatedAt DateTime @default(now())
 }
+
+model WeatherDaily {
+  id         String   @id @default(cuid())
+  lat        Float
+  lng        Float
+  date       DateTime @db.Date
+  source     String
+  tMaxC      Float?
+  tMinC      Float?
+  precipMm   Float?
+  windMaxKmh Float?
+  fetchedAt  DateTime @default(now())
+
+  @@unique([lat, lng, date, source])
+}
