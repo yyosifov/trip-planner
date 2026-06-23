@@ -23,6 +23,7 @@ model Trip {
   places          Place[]
   days            ItineraryDay[]
   researchRuns    ResearchRun[]
+  wildlifeReport  WildlifeReport?
 }
 
 model TravelerProfile {
@@ -105,4 +106,12 @@ model ResearchRun {
   stats     Json     @default("{}")
   error     String?
   createdAt DateTime @default(now())
+}
+
+model WildlifeReport {
+  id          String   @id @default(cuid())
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId      String   @unique
+  data        Json     @default("{}")
+  generatedAt DateTime @default(now())
 }
