@@ -10,6 +10,7 @@ import { ResearchModule } from './research/research.module';
 import { PlacesModule } from './places/places.module';
 import { ItineraryModule } from './itinerary/itinerary.module';
 import { WildlifeModule } from './wildlife/wildlife.module';
+import { WeatherModule } from './weather/weather.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WildlifeModule } from './wildlife/wildlife.module';
     PlacesModule,
     ItineraryModule,
     WildlifeModule,
+    WeatherModule,
   ],
   controllers: [AppController],
   providers: [AppService],
