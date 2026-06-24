@@ -1,6 +1,6 @@
 import { ResearchPlace, TravelerProfile } from "@trip/shared";
 
-export type SegmentQueries = { segment: string; queries: string[] };
+export type SegmentQueries = { segment: string | null; queries: string[] };
 
 export function buildQueries(destination: string, profile: TravelerProfile): string[] {
   const kidWord = profile.partyKids > 0 ? "family kid-friendly" : "best";
@@ -42,7 +42,7 @@ export function buildSegmentedQueries(
   profile: TravelerProfile,
 ): SegmentQueries[] {
   if (waypoints.length === 0) {
-    return [{ segment: destination, queries: buildQueries(destination, profile) }];
+    return [{ segment: null, queries: buildQueries(destination, profile) }];
   }
 
   const sorted = [...waypoints].sort((a, b) => a.order - b.order);

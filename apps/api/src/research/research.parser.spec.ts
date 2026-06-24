@@ -21,7 +21,7 @@ describe("buildSegmentedQueries", () => {
   it("falls back to buildQueries output when no waypoints", () => {
     const result = buildSegmentedQueries([], "Norway", PROFILE_KIDS);
     expect(result).toHaveLength(1);
-    expect(result[0].segment).toBe("Norway");
+    expect(result[0].segment).toBeNull();
     expect(result[0].queries).toEqual(buildQueries("Norway", PROFILE_KIDS));
   });
 

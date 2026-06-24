@@ -82,7 +82,7 @@ export class WeatherService {
     let forecast: DailyWeather[] | null = null;
     const daysUntilStart = daysDiff(today, windowStart);
 
-    if (daysUntilStart <= FORECAST_HORIZON_DAYS) {
+    if (daysUntilStart <= FORECAST_HORIZON_DAYS && windowEnd >= today) {
       const forecastStart = daysUntilStart < 0 ? today : windowStart;
 
       const existing = await this.prisma.weatherDaily.findFirst({
