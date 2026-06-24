@@ -1,3 +1,5 @@
+import type { DailyWeather } from "@trip/shared";
+
 export const GEMINI = "GeminiPort";
 export const SEARCH = "SearchPort";
 export const MAPS = "MapsPort";
@@ -13,4 +15,16 @@ export interface SearchPort { search(query: string, count: number): Promise<Sear
 export interface MapsPort {
   geocode(query: string): Promise<{ lat: number; lng: number } | null>;
   photoUrl(query: string): Promise<string | null>;
+}
+
+export const WEATHER = "WeatherPort";
+
+export interface WeatherPort {
+  fetchDaily(
+    lat: number,
+    lng: number,
+    start: string,
+    end: string,
+    kind: "archive" | "forecast",
+  ): Promise<DailyWeather[]>;
 }

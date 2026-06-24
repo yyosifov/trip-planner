@@ -1,5 +1,7 @@
 import { ResearchPlace, TravelerProfile } from "@trip/shared";
 
+export type SegmentQueries = { segment: string | null; queries: string[] };
+
 export function buildQueries(destination: string, profile: TravelerProfile): string[] {
   const kidWord = profile.partyKids > 0 ? "family kid-friendly" : "best";
   const base = [
@@ -12,6 +14,58 @@ export function buildQueries(destination: string, profile: TravelerProfile): str
     base.push(`${kidWord} ${interest} in ${destination}`);
   }
   return [...new Set(base)];
+}
+
+function buildHubQueries(city: string, destination: string, profile: TravelerProfile): string[] {
+  const kidWord = profile.partyKids > 0 ? "family kid-friendly" : "best";
+  const base = [
+    `${kidWord} things to do in ${city} ${destination}`,
+    `${kidWord} day hikes near ${city}`,
+  ];
+  for (const interest of profile.interests.slice(0, 2)) {
+    base.push(`${kidWord} ${interest} in ${city}`);
+  }
+  return [...new Set(base)];
+}
+
+function buildLegQueries(from: string, to: string, destination: string): string[] {
+  return [
+    `things to do between ${from} and ${to} ${destination}`,
+    `scenic stops ${from} to ${to} drive`,
+    `day trips along ${from} to ${to} route`,
+  ];
+}
+
+export function buildSegmentedQueries(
+  waypoints: { city: string; order: number }[],
+  destination: string,
+  profile: TravelerProfile,
+): SegmentQueries[] {
+  if (waypoints.length === 0) {
+    return [{ segment: null, queries: buildQueries(destination, profile) }];
+  }
+
+  const sorted = [...waypoints].sort((a, b) => a.order - b.order);
+  const result: SegmentQueries[] = [];
+  const startCity = sorted[0].city;
+
+  result.push({ segment: startCity, queries: buildHubQueries(startCity, destination, profile) });
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const from = sorted[i].city;
+    const to = sorted[i + 1].city;
+
+    result.push({ segment: `${from}→${to}`, queries: buildLegQueries(from, to, destination) });
+
+    const isLast = i === sorted.length - 2;
+    if (!isLast) {
+      result.push({ segment: to, queries: buildHubQueries(to, destination, profile) });
+    } else if (to !== startCity) {
+      result.push({ segment: to, queries: buildHubQueries(to, destination, profile) });
+    }
+  }
+
+  return result;
 }
 
 export function dedupePlaces(

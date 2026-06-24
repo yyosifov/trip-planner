@@ -107,4 +107,29 @@ export const handlers = [
       },
     ]),
   ),
+  http.get(`${BASE}/trips/:id/weather`, () =>
+    HttpResponse.json({
+      available: true,
+      location: { name: "Bergen, Norway", lat: 60.39, lng: 5.32 },
+      window: { start: "2027-08-10", end: "2027-08-12" },
+      forecast: null,
+      normals: { tMaxC: 22.3, tMinC: 14.1, precipMmAvg: 2.0, windMaxKmh: 14.5 },
+      years: [
+        {
+          year: 2025,
+          days: [
+            { date: "2025-08-10", tMaxC: 23, tMinC: 15, precipMm: 0, windMaxKmh: 14 },
+            { date: "2025-08-11", tMaxC: 21, tMinC: 14, precipMm: 1.2, windMaxKmh: 16 },
+            { date: "2025-08-12", tMaxC: 20, tMinC: 13, precipMm: 3.0, windMaxKmh: 20 },
+          ],
+        },
+        { year: 2024, days: [
+            { date: "2024-08-10", tMaxC: 22, tMinC: 14, precipMm: 0, windMaxKmh: 12 },
+            { date: "2024-08-11", tMaxC: 20, tMinC: 13, precipMm: 0.5, windMaxKmh: 10 },
+            { date: "2024-08-12", tMaxC: 19, tMinC: 12, precipMm: 2.0, windMaxKmh: 11 },
+          ],
+        },
+      ],
+    }),
+  ),
 ];

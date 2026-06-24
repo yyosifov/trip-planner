@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { CreateTripInput, TravelerProfile, PlaceStatus, WildlifeData } from "@trip/shared";
+import type { CreateTripInput, TravelerProfile, PlaceStatus, WildlifeData, WeatherResponse } from "@trip/shared";
+
+export interface Waypoint {
+  id: string;
+  city: string;
+  order: number;
+}
 
 export interface Trip {
   id: string;
@@ -10,6 +16,8 @@ export interface Trip {
   daysMax: number;
   routeType: string;
   notes: string;
+  maxDrivingHoursPerDay: number | null;
+  waypoints: Waypoint[];
 }
 export interface ChatMsg { role: "user" | "assistant"; content: string; }
 export interface Place {
@@ -27,6 +35,7 @@ export interface Place {
   estDurationMin: number;
   tags: string[];
   sourceUrl: string | null;
+  segment: string | null;
 }
 export interface BoardItem { id: string; place: Place; timeSlot?: string; }
 export interface BoardDay { id: string; dayIndex: number; baseCity: string; items: BoardItem[]; }
@@ -144,3 +153,9 @@ export function useGenerateWildlife(id: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["wildlife", id] }),
   });
 }
+
+export const useWeather = (id: string) =>
+  useQuery({
+    queryKey: ["weather", id],
+    queryFn: () => api.get<WeatherResponse>(`/trips/${id}/weather`),
+  });

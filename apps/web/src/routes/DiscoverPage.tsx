@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
@@ -66,6 +66,9 @@ function PlaceCard({ place, selected, onClick, onStatus }: {
             <Badge label={place.difficulty} color={diffColor} bg={diffColor + "20"} />
             {place.weatherDependent && (
               <Badge label="☔ rain risk" color="#0369a1" bg="#e0f2fe" />
+            )}
+            {place.segment && (
+              <Badge label={`📍 ${place.segment}`} color="#374151" bg="#f1f5f9" />
             )}
           </div>
         </div>
@@ -267,10 +270,19 @@ export function DiscoverPage() {
   const [selected, setSelected] = useState<Place | null>(null);
   const [statusFilter, setStatusFilter] = useState<typeof STATUS_FILTERS[number]>("all");
   const [catFilter, setCatFilter] = useState<CategoryFilter>("all");
+  const [segFilter, setSegFilter] = useState("all");
 
-  const visible = (places ?? []).filter((p) =>
-    (statusFilter === "all" || p.status === statusFilter) &&
-    (catFilter === "all" || p.category === catFilter),
+  const segments = useMemo(
+    () =>
+      [...new Set((places ?? []).map((p) => p.segment).filter((s): s is string => s !== null))].sort(),
+    [places],
+  );
+
+  const visible = (places ?? []).filter(
+    (p) =>
+      (statusFilter === "all" || p.status === statusFilter) &&
+      (catFilter === "all" || p.category === catFilter) &&
+      (segFilter === "all" || p.segment === segFilter),
   );
   const withCoords = visible.filter((p) => p.lat != null && p.lng != null);
   const allWithCoords = (places ?? []).filter((p) => p.lat != null && p.lng != null);
@@ -351,6 +363,27 @@ export function DiscoverPage() {
               </button>
             ))}
           </div>
+
+          {/* Segment filter */}
+          {segments.length > 0 && (
+            <div style={{ padding: "6px 8px", borderBottom: "1px solid #f0f0f0", display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {["all", ...segments].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSegFilter(s)}
+                  style={{
+                    fontSize: 11, padding: "2px 8px", borderRadius: 10, border: "none",
+                    cursor: "pointer",
+                    background: segFilter === s ? "#0f172a" : "#f3f4f6",
+                    color: segFilter === s ? "#fff" : "#374151",
+                    fontWeight: segFilter === s ? 600 : 400,
+                  }}
+                >
+                  {s === "all" ? "🗺 all" : s}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Count */}
           <div style={{ padding: "4px 12px", fontSize: 11, color: "#9ca3af", borderBottom: "1px solid #f0f0f0" }}>

@@ -21,6 +21,7 @@ describe("TripsService", () => {
     const r = await svc.create({
       name: "Norway", destination: "Norway", dateWindowStart: null, dateWindowEnd: null,
       daysMin: 7, daysMax: 10, routeType: "open", notes: "",
+      waypoints: [], maxDrivingHoursPerDay: null,
     });
     expect(r.id).toBe("t1");
     expect(prismaMock.trip.create).toHaveBeenCalled();
