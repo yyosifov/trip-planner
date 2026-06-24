@@ -65,6 +65,7 @@ export function WildlifePage() {
         <Link to={`/trips/${id}`}>Intake</Link>
         <Link to={`/trips/${id}/discover`}>Discover</Link>
         <Link to={`/trips/${id}/itinerary`}>Itinerary</Link>
+        <Link to={`/trips/${id}/weather`}>Weather</Link>
         <span style={{ fontWeight: 600 }}>Wildlife</span>
       </nav>
 

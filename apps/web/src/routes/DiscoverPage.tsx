@@ -323,6 +323,7 @@ export function DiscoverPage() {
       <div style={{ padding: "8px 16px", borderBottom: "1px solid #eee", display: "flex", gap: 12, alignItems: "center" }}>
         <Link to={`/trips/${id}`} style={{ fontSize: 13 }}>← Interview</Link>
         <Link to={`/trips/${id}/wildlife`} style={{ fontSize: 13 }}>Wildlife</Link>
+        <Link to={`/trips/${id}/weather`} style={{ fontSize: 13 }}>Weather</Link>
         <strong style={{ flex: 1 }}>Discover Places</strong>
         <button onClick={runResearch} disabled={research.isPending} style={{ padding: "4px 12px", fontSize: 13 }}>
           {research.isPending ? "Researching…" : "🔍 Run research"}
