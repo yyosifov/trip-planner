@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useWeather } from "../api/hooks";
+import { useWeather, useUpdateTrip } from "../api/hooks";
 import type { DailyWeather } from "@trip/shared";
 
 function fmt(n: number | null | undefined, unit: string): string {
@@ -38,9 +39,43 @@ function Nav({ id }: { id: string }) {
   );
 }
 
+function DatePicker({ id, initialStart, initialEnd, onCancel }: {
+  id: string;
+  initialStart?: string;
+  initialEnd?: string;
+  onCancel?: () => void;
+}) {
+  const [start, setStart] = useState(initialStart ?? "");
+  const [end, setEnd] = useState(initialEnd ?? "");
+  const update = useUpdateTrip(id);
+
+  const save = () => {
+    if (!start || !end) return;
+    update.mutate({ dateWindowStart: start, dateWindowEnd: end });
+  };
+
+  return (
+    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
+      <input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+      <span style={{ color: "#6b7280" }}>→</span>
+      <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} min={start} />
+      <button onClick={save} disabled={!start || !end || update.isPending} style={{ padding: "4px 14px" }}>
+        {update.isPending ? "Saving…" : "Save & load weather"}
+      </button>
+      {onCancel && (
+        <button onClick={onCancel} style={{ padding: "4px 10px", background: "none", border: "1px solid #ddd", cursor: "pointer" }}>
+          Cancel
+        </button>
+      )}
+      {update.isError && <span style={{ color: "#ef4444", fontSize: 13 }}>Save failed</span>}
+    </div>
+  );
+}
+
 export function WeatherPage() {
   const { id = "" } = useParams();
   const { data, isLoading } = useWeather(id);
+  const [editingDates, setEditingDates] = useState(false);
 
   if (isLoading) return <div style={{ padding: 20 }}>Loading…</div>;
 
@@ -49,7 +84,8 @@ export function WeatherPage() {
       <div style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
         <Nav id={id} />
         <h1>⛅ Weather</h1>
-        <p>Set a date window for your trip to see weather information.</p>
+        <p style={{ color: "#555" }}>Set your trip dates to see historical data and forecasts.</p>
+        <DatePicker id={id} />
       </div>
     );
   }
@@ -61,10 +97,29 @@ export function WeatherPage() {
     <div style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
       <Nav id={id} />
 
-      <h1>⛅ Weather — {location?.name}</h1>
-      <p style={{ color: "#555", marginTop: -8 }}>
-        {win?.start} → {win?.end}
-      </p>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 4 }}>
+        <h1 style={{ margin: 0 }}>⛅ Weather — {location?.name}</h1>
+      </div>
+
+      {editingDates ? (
+        <DatePicker
+          id={id}
+          initialStart={win?.start}
+          initialEnd={win?.end}
+          onCancel={() => setEditingDates(false)}
+        />
+      ) : (
+        <p style={{ color: "#555", marginTop: 4, marginBottom: 20 }}>
+          {win?.start} → {win?.end}
+          {" "}
+          <button
+            onClick={() => setEditingDates(true)}
+            style={{ fontSize: 12, padding: "1px 8px", marginLeft: 4, cursor: "pointer" }}
+          >
+            Edit dates
+          </button>
+        </p>
+      )}
 
       {forecast ? (
         <section style={{ marginBottom: 24 }}>

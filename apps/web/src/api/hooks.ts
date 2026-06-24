@@ -54,6 +54,18 @@ export function useCreateTrip() {
   });
 }
 
+export function useUpdateTrip(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { dateWindowStart: string | null; dateWindowEnd: string | null }) =>
+      api.patch<Trip>(`/trips/${id}`, v),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["trip", id] });
+      qc.invalidateQueries({ queryKey: ["weather", id] });
+    },
+  });
+}
+
 export const useProfile = (id: string) =>
   useQuery({ queryKey: ["profile", id], queryFn: () => api.get<TravelerProfile>(`/trips/${id}/profile`) });
 
