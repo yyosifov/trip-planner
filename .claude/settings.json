@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --filter *)",
+      "Bash(/Users/yosifov/.volta/bin/pnpm --filter *)",
+      "Bash(pnpm test*)",
+      "Bash(pnpm vitest*)",
+      "Bash(pnpm jest*)",
+      "Bash(vitest run*)",
+      "Bash(pnpm db:migrate*)",
+      "Bash(pnpm db:deploy*)",
+      "Bash(/Users/yosifov/.volta/bin/pnpm db:migrate*)",
+      "Bash(/Users/yosifov/.volta/bin/pnpm db:deploy*)"
+    ]
+  }
+}
