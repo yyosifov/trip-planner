@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { CreateTripInput, TravelerProfile, PlaceStatus, WildlifeData } from "@trip/shared";
+import type { CreateTripInput, TravelerProfile, PlaceStatus, WildlifeData, WeatherResponse } from "@trip/shared";
 
 export interface Waypoint {
   id: string;
@@ -153,3 +153,9 @@ export function useGenerateWildlife(id: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["wildlife", id] }),
   });
 }
+
+export const useWeather = (id: string) =>
+  useQuery({
+    queryKey: ["weather", id],
+    queryFn: () => api.get<WeatherResponse>(`/trips/${id}/weather`),
+  });

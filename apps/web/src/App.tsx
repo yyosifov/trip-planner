@@ -5,6 +5,7 @@ import { IntakePage } from "./routes/IntakePage";
 import { DiscoverPage } from "./routes/DiscoverPage";
 import { ItineraryPage } from "./routes/ItineraryPage";
 import { WildlifePage } from "./routes/WildlifePage";
+import { WeatherPage } from "./routes/WeatherPage";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/trips/:id/discover" element={<DiscoverPage />} />
         <Route path="/trips/:id/itinerary" element={<ItineraryPage />} />
         <Route path="/trips/:id/wildlife" element={<WildlifePage />} />
+        <Route path="/trips/:id/weather" element={<WeatherPage />} />
       </Routes>
     </>
   );
