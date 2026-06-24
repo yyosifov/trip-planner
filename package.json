@@ -2,15 +2,15 @@
   "name": "trip-planner",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n api,web -c cyan,magenta \"pnpm run dev:api\" \"pnpm run dev:web\"",
+    "dev": "concurrently -n api,web -c cyan,magenta \"bun run dev:api\" \"bun run dev:web\"",
     "test": "pnpm -r test",
     "build": "pnpm -r build",
-    "dev:api": "dotenv -e .env -- pnpm --filter api start:dev",
-    "dev:web": "dotenv -e .env -- pnpm --filter web dev",
-    "db:migrate": "dotenv -e .env -- pnpm --filter api exec prisma migrate dev",
-    "db:deploy": "dotenv -e .env -- pnpm --filter api exec prisma migrate deploy",
-    "db:studio": "dotenv -e .env -- pnpm --filter api exec prisma studio",
-    "db:reset": "dotenv -e .env -- pnpm --filter api exec prisma migrate reset"
+    "dev:api": "dotenv -e .env -- bun run --cwd apps/api start:dev",
+    "dev:web": "dotenv -e .env -- bun run --cwd apps/web dev",
+    "db:migrate": "dotenv -e .env -- sh -c 'cd apps/api && bun x prisma migrate dev'",
+    "db:deploy": "dotenv -e .env -- sh -c 'cd apps/api && bun x prisma migrate deploy'",
+    "db:studio": "dotenv -e .env -- sh -c 'cd apps/api && bun x prisma studio'",
+    "db:reset": "dotenv -e .env -- sh -c 'cd apps/api && bun x prisma migrate reset'"
   },
   "devDependencies": {
     "concurrently": "^10.0.3",
