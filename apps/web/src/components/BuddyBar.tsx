@@ -140,7 +140,7 @@ export default function BuddyBar({ tripId }: Props) {
         {expanded && (
           <>
             <span style={{ fontWeight: 700, fontSize: 13, color: "var(--fg)" }}>💬 Trip Buddy</span>
-            <span style={{ fontSize: 11, background: "rgba(34,197,94,0.15)", color: "#22c55e", padding: "1px 6px", borderRadius: 10 }}>
+            <span style={{ fontSize: 11, background: "var(--success-bg)", color: "var(--success)", padding: "1px 6px", borderRadius: 10 }}>
               online
             </span>
             <span style={{ flex: 1 }} />
@@ -248,7 +248,7 @@ function MessageBubble({ msg }: { msg: BuddyMessage }) {
                 key={i}
                 style={{
                   fontSize: 10,
-                  background: "rgba(99,102,241,0.15)",
+                  background: "var(--primary-soft)",
                   color: "var(--primary)",
                   padding: "1px 5px",
                   borderRadius: 10,
