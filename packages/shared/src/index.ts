@@ -5,3 +5,4 @@ export * from "./trip";
 export * from "./itinerary";
 export * from "./wildlife";
 export * from "./weather";
+export * from "./buddy";
