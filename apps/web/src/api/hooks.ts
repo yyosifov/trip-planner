@@ -12,6 +12,8 @@ export interface Trip {
   id: string;
   name: string;
   destination: string;
+  dateWindowStart: string | null;
+  dateWindowEnd: string | null;
   daysMin: number;
   daysMax: number;
   routeType: string;
@@ -51,6 +53,18 @@ export function useCreateTrip() {
   return useMutation({
     mutationFn: (input: CreateTripInput) => api.post<Trip>("/trips", input),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["trips"] }),
+  });
+}
+
+export function useUpdateTrip(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { dateWindowStart: string | null; dateWindowEnd: string | null }) =>
+      api.patch<Trip>(`/trips/${id}`, v),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["trip", id] });
+      qc.invalidateQueries({ queryKey: ["weather", id] });
+    },
   });
 }
 
@@ -154,8 +168,8 @@ export function useGenerateWildlife(id: string) {
   });
 }
 
-export const useWeather = (id: string) =>
+export const useWeather = (id: string, city?: string) =>
   useQuery({
-    queryKey: ["weather", id],
-    queryFn: () => api.get<WeatherResponse>(`/trips/${id}/weather`),
+    queryKey: ["weather", id, city ?? ""],
+    queryFn: () => api.get<WeatherResponse>(`/trips/${id}/weather${city ? `?city=${encodeURIComponent(city)}` : ""}`),
   });

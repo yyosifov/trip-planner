@@ -91,12 +91,12 @@ export function TripsPage() {
 
         {/* Waypoints builder */}
         {routeType !== "open" && (
-          <div style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-            <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 2 }}>Route cities</div>
+          <div style={{ border: "1px solid var(--border)", borderRadius: 6, padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 2 }}>Route cities</div>
 
             {/* Start */}
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <span style={{ width: 52, fontSize: 12, color: "#374151" }}>Start</span>
+              <span style={{ width: 52, fontSize: 12, color: "var(--fg)" }}>Start</span>
               <input
                 value={startCity}
                 onChange={(e) => setStartCity(e.target.value)}
@@ -108,7 +108,7 @@ export function TripsPage() {
             {/* Intermediate stops */}
             {stops.map((stop, i) => (
               <div key={i} style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <span style={{ width: 52, fontSize: 12, color: "#374151" }}>Stop {i + 1}</span>
+                <span style={{ width: 52, fontSize: 12, color: "var(--fg)" }}>Stop {i + 1}</span>
                 <input
                   value={stop}
                   onChange={(e) => updateStop(i, e.target.value)}
@@ -123,12 +123,12 @@ export function TripsPage() {
 
             {/* End */}
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <span style={{ width: 52, fontSize: 12, color: "#374151" }}>End</span>
+              <span style={{ width: 52, fontSize: 12, color: "var(--fg)" }}>End</span>
               {routeType === "roundtrip" ? (
                 <input
                   value={startCity || "Same as start"}
                   disabled
-                  style={{ flex: 1, fontSize: 13, color: "#9ca3af", background: "#f9fafb" }}
+                  style={{ flex: 1, fontSize: 13, color: "var(--fg-subtle)", background: "var(--surface-2)" }}
                 />
               ) : (
                 <input
@@ -163,7 +163,7 @@ export function TripsPage() {
             placeholder="hours/day"
             style={{ width: 90, fontSize: 13 }}
           />
-          <span style={{ fontSize: 12, color: "#6b7280" }}>hours/day (optional)</span>
+          <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>hours/day (optional)</span>
         </div>
 
         <button type="submit" disabled={create.isPending}>
@@ -174,14 +174,14 @@ export function TripsPage() {
       {isLoading && <p>Loading…</p>}
       <ul style={{ listStyle: "none", padding: 0 }}>
         {trips?.map((t) => (
-          <li key={t.id} style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}>
+          <li key={t.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
             <Link to={`/trips/${t.id}`}>
               <strong>{t.name}</strong>
             </Link>
             {" — "}
             {t.destination}
             {t.waypoints?.length > 0 && (
-              <span style={{ fontSize: 12, color: "#6b7280", marginLeft: 6 }}>
+              <span style={{ fontSize: 12, color: "var(--fg-muted)", marginLeft: 6 }}>
                 ({t.waypoints.map((w) => w.city).join(" → ")})
               </span>
             )}

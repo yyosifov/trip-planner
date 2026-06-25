@@ -42,4 +42,15 @@ export class TripsService {
     if (!trip) throw new NotFoundException(`Trip ${id} not found`);
     return trip;
   }
+
+  updateDates(id: string, data: { dateWindowStart: string | null; dateWindowEnd: string | null }) {
+    return this.prisma.trip.update({
+      where: { id },
+      data: {
+        dateWindowStart: data.dateWindowStart ? new Date(data.dateWindowStart) : null,
+        dateWindowEnd: data.dateWindowEnd ? new Date(data.dateWindowEnd) : null,
+      },
+      include: { waypoints: { orderBy: { order: "asc" } } },
+    });
+  }
 }

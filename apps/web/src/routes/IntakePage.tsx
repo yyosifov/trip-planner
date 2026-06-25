@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { TripNav } from "../components/TripNav";
 import { toast } from "sonner";
 import { useTrip, useMessages, useProfile, usePostIntake, useClearMessages, type ChatMsg } from "../api/hooks";
 import type { TravelerProfile } from "@trip/shared";
@@ -7,7 +8,7 @@ import type { TravelerProfile } from "@trip/shared";
 function ProfilePanel({ p }: { p?: TravelerProfile }) {
   if (!p) return null;
   return (
-    <aside style={{ background: "#f9f9f9", padding: 12, borderRadius: 6, fontSize: 13 }}>
+    <aside style={{ background: "var(--surface-2)", padding: 12, borderRadius: 6, fontSize: 13 }}>
       <strong>Profile {p.completed ? "✓" : "(filling…)"}</strong>
       <ul style={{ margin: "6px 0", paddingLeft: 16 }}>
         <li>Adults: {p.partyAdults}, Kids: {p.partyKids} ({p.kidsAges.join(", ")} yrs)</li>
@@ -63,14 +64,13 @@ export function IntakePage() {
 
   return (
     <div style={{ padding: 24, maxWidth: 700 }}>
-      <nav style={{ marginBottom: 12, fontSize: 13 }}>
-        <Link to="/">← All trips</Link>
-        {" · "}
-        <Link to={`/trips/${id}/discover`}>Discover places →</Link>
-      </nav>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+        <Link to="/" style={{ fontSize: 13, color: "var(--fg-muted)", textDecoration: "none" }}>← All trips</Link>
+      </div>
+      <TripNav id={id} />
 
       <h2>{trip?.name ?? "Trip"} — Interview</h2>
-      <p style={{ color: "#666", fontSize: 13 }}>
+      <p style={{ color: "var(--fg-muted)", fontSize: 13 }}>
         Chat to describe your family and preferences. The AI will research places once your profile is complete.
       </p>
 
@@ -87,11 +87,11 @@ export function IntakePage() {
             </button>
           </div>
           <div style={{
-            height: 400, overflowY: "auto", border: "1px solid #ddd",
-            borderRadius: 6, padding: 12, marginBottom: 8, background: "#fff",
+            height: 400, overflowY: "auto", border: "1px solid var(--border)",
+            borderRadius: 6, padding: 12, marginBottom: 8, background: "var(--card)",
           }}>
             {allMsgs.length === 0 && (
-              <p style={{ color: "#aaa" }}>Start by telling me about your trip…</p>
+              <p style={{ color: "var(--fg-subtle)" }}>Start by telling me about your trip…</p>
             )}
             {allMsgs.map((m, i) => (
               <div key={i} style={{
@@ -108,7 +108,7 @@ export function IntakePage() {
               </div>
             ))}
             {post.isPending && (
-              <div style={{ color: "#aaa", fontStyle: "italic" }}>AI is thinking…</div>
+              <div style={{ color: "var(--fg-subtle)", fontStyle: "italic" }}>AI is thinking…</div>
             )}
             <div ref={bottomRef} />
           </div>
@@ -123,7 +123,7 @@ export function IntakePage() {
               <button
                 onClick={() => send({ retryText: failedMsg })}
                 disabled={post.isPending}
-                style={{ marginLeft: 12, padding: "4px 12px", cursor: "pointer", background: "#0070f3", color: "#fff", border: "none", borderRadius: 4, fontSize: 13 }}
+                style={{ marginLeft: 12, padding: "4px 12px", cursor: "pointer", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 4, fontSize: 13 }}
               >
                 {post.isPending ? "Retrying…" : "Retry"}
               </button>
@@ -151,8 +151,8 @@ export function IntakePage() {
             style={{
               marginTop: 12, width: "100%", padding: "8px 0", borderRadius: 4,
               cursor: "pointer", border: "none",
-              background: profile?.completed ? "#0070f3" : "#e5e7eb",
-              color: profile?.completed ? "#fff" : "#6b7280",
+              background: profile?.completed ? "var(--primary)" : "var(--surface-3)",
+              color: profile?.completed ? "var(--primary-fg)" : "var(--fg-muted)",
             }}
             onClick={() => navigate(`/trips/${id}/discover`)}
           >
