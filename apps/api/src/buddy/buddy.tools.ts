@@ -37,7 +37,7 @@ export const makeUpdateProfileTool = (prisma: PrismaService, tripId: string) =>
         where: { tripId },
         data: {
           ...typedChanges,
-          extra: { ...currentExtra, ...(extra ?? {}) },
+          extra: { ...currentExtra, ...(extra ?? {}) } as object,
         },
       });
       return "Profile updated.";

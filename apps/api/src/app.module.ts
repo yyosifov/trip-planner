@@ -11,6 +11,7 @@ import { PlacesModule } from './places/places.module';
 import { ItineraryModule } from './itinerary/itinerary.module';
 import { WildlifeModule } from './wildlife/wildlife.module';
 import { WeatherModule } from './weather/weather.module';
+import { BuddyModule } from './buddy/buddy.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { WeatherModule } from './weather/weather.module';
     ItineraryModule,
     WildlifeModule,
     WeatherModule,
+    BuddyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
