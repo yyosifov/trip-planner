@@ -33,12 +33,11 @@ export const makeUpdateProfileTool = (prisma: PrismaService, tripId: string) =>
       const profile = await prisma.travelerProfile.findUnique({ where: { tripId } });
       const currentExtra = (profile?.extra ?? {}) as Record<string, unknown>;
       const { extra, ...typedChanges } = changes;
-      await prisma.travelerProfile.updateMany({
+      const newExtra = { ...typedChanges, extra: { ...currentExtra, ...(extra ?? {}) } as object };
+      await prisma.travelerProfile.upsert({
         where: { tripId },
-        data: {
-          ...typedChanges,
-          extra: { ...currentExtra, ...(extra ?? {}) } as object,
-        },
+        update: newExtra,
+        create: { tripId, ...newExtra },
       });
       return "Profile updated.";
     },

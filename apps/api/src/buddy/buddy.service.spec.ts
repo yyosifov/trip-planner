@@ -1,4 +1,5 @@
 import { BuddyService } from "./buddy.service";
+import { buildBuddyAgent } from "./buddy.graph";
 
 // Mock the LangGraph module so we never actually call the LLM in tests
 jest.mock("./buddy.graph", () => ({
@@ -44,6 +45,7 @@ const prismaMock = {
       { role: "user", content: "hello", actions: null },
       { role: "assistant", content: "hi", actions: null },
     ]),
+    delete: jest.fn().mockResolvedValue({}),
   },
   researchRun: {
     findFirst: jest.fn().mockResolvedValue(null),
@@ -127,6 +129,15 @@ describe("BuddyService", () => {
       const { reply } = await svc.postMessage("t1", "hello");
       expect(typeof reply).toBe("string");
       expect(reply.length).toBeGreaterThan(0);
+    });
+
+    it("rolls back user message if LLM throws", async () => {
+      const llmError = new Error("LLM unavailable");
+      (buildBuddyAgent as jest.Mock).mockReturnValueOnce({
+        invoke: jest.fn().mockRejectedValue(llmError),
+      });
+      await expect(svc.postMessage("t1", "hello")).rejects.toThrow("LLM unavailable");
+      expect(prismaMock.buddyMessage.delete).toHaveBeenCalledWith({ where: { id: "m1" } });
     });
   });
 });

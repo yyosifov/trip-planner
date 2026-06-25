@@ -10,10 +10,12 @@ const CAT_ICON: Record<string, string> = {
   hike: "🥾", activity: "🎯", museum: "🏛️", beach: "🏖️",
   food: "🍽️", sight: "👁️", other: "📍",
 };
+// semantic data-vis colors — exempt from token requirement
 const CAT_COLOR: Record<string, string> = {
   hike: "#10b981", activity: "#f59e0b", museum: "#8b5cf6", beach: "#06b6d4",
   food: "#ef4444", sight: "#3b82f6", other: "var(--fg-muted)",
 };
+// semantic data-vis colors — exempt from token requirement
 const DIFFICULTY_COLOR: Record<string, string> = {
   easy: "#22c55e", moderate: "#f59e0b", hard: "#ef4444",
 };

@@ -123,7 +123,7 @@ export function IntakePage() {
               <button
                 onClick={() => send({ retryText: failedMsg })}
                 disabled={post.isPending}
-                style={{ marginLeft: 12, padding: "4px 12px", cursor: "pointer", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 4, fontSize: 13 }}
+                style={{ marginLeft: 12, padding: "4px 12px", cursor: "pointer", background: "var(--primary)", color: "var(--primary-fg)", border: "none", borderRadius: 4, fontSize: 13 }}
               >
                 {post.isPending ? "Retrying…" : "Retry"}
               </button>

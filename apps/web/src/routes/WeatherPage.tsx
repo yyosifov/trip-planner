@@ -9,6 +9,7 @@ function fmt(n: number | null | undefined, decimals = 0): string {
   return n == null ? "—" : n.toFixed(decimals);
 }
 
+// semantic data-vis colors — exempt from token requirement
 function precipBg(mm: number | null | undefined): string | undefined {
   if (mm == null || mm < 1) return undefined;
   if (mm < 5) return "rgba(59,130,246,0.12)";
@@ -16,6 +17,7 @@ function precipBg(mm: number | null | undefined): string | undefined {
   return "#3b82f6";
 }
 
+// semantic data-vis colors — exempt from token requirement
 function precipFg(mm: number | null | undefined): string {
   return mm != null && mm >= 15 ? "#ffffff" : "var(--fg)";
 }

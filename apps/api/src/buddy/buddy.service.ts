@@ -54,6 +54,7 @@ export class BuddyService {
       ];
 
       const agent = buildBuddyAgent(tools, systemPrompt);
+      // Simplified: prior tool call/result messages are omitted — sufficient for single-turn ReAct history
       const lcHistory = history.map((m) =>
         m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content),
       );
