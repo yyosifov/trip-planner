@@ -63,7 +63,7 @@ export function IntakePage() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 700 }}>
+    <div style={{ padding: 24, maxWidth: 700, paddingBottom: 48 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
         <Link to="/" style={{ fontSize: 13, color: "var(--fg-muted)", textDecoration: "none" }}>← All trips</Link>
       </div>

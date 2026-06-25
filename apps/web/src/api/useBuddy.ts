@@ -23,6 +23,7 @@ export function useBuddy(tripId: string) {
   const [messages, setMessages] = useState<BuddyMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<BuddySuggestion | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadHistory = useCallback(async () => {
     const msgs = await api.get<BuddyMessage[]>(`/trips/${tripId}/buddy/messages`);
@@ -32,6 +33,7 @@ export function useBuddy(tripId: string) {
   const sendMessage = useCallback(
     async (content: string) => {
       setMessages((m) => [...m, { role: "user", content }]);
+      setError(null);
       setLoading(true);
       try {
         const { reply, actions } = await api.post<{ reply: string; actions: BuddyAction[] }>(
@@ -40,6 +42,10 @@ export function useBuddy(tripId: string) {
         );
         setMessages((m) => [...m, { role: "assistant", content: reply, actions }]);
         invalidateFromActions(qc, tripId, actions);
+      } catch (e) {
+        setError("Trip Buddy couldn't respond. Please try again.");
+        // Roll back the optimistic user message
+        setMessages((m) => m.slice(0, -1));
       } finally {
         setLoading(false);
       }
@@ -58,5 +64,7 @@ export function useBuddy(tripId: string) {
 
   const dismissSuggestion = useCallback(() => setSuggestion(null), []);
 
-  return { messages, loading, suggestion, loadHistory, sendMessage, checkSuggestion, dismissSuggestion };
+  const clearError = useCallback(() => setError(null), []);
+
+  return { messages, loading, suggestion, error, loadHistory, sendMessage, checkSuggestion, dismissSuggestion, clearError };
 }

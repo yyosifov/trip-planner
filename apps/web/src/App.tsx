@@ -43,7 +43,7 @@ export default function App() {
         title="Toggle dark / light mode"
         style={{
           position: "fixed",
-          bottom: 20,
+          bottom: 60,
           right: 20,
           zIndex: 9999,
           width: 38,

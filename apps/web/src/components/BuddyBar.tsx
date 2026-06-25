@@ -13,7 +13,7 @@ export default function BuddyBar({ tripId }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages, loading, suggestion, loadHistory, sendMessage, checkSuggestion, dismissSuggestion } =
+  const { messages, loading, suggestion, error, loadHistory, sendMessage, checkSuggestion, dismissSuggestion, clearError } =
     useBuddy(tripId);
   const qc = useQueryClient();
 
@@ -38,7 +38,7 @@ export default function BuddyBar({ tripId }: Props) {
     if (expanded && messages.length === 0) {
       loadHistory();
     }
-  }, [expanded]);
+  }, [expanded, loadHistory, messages.length]);
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -166,6 +166,22 @@ export default function BuddyBar({ tripId }: Props) {
             {messages.map((msg, i) => (
               <MessageBubble key={i} msg={msg} />
             ))}
+            {error && (
+              <div style={{
+                background: "var(--surface-2)",
+                border: "1px solid var(--border-strong)",
+                borderRadius: "var(--r-sm)",
+                padding: "8px 12px",
+                fontSize: 12,
+                color: "var(--fg-muted)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}>
+                <span>{error}</span>
+                <button onClick={clearError} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--fg-subtle)", fontSize: 11 }}>✕</button>
+              </div>
+            )}
             {loading && (
               <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 16 }}>🧭</span>

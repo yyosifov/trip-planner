@@ -38,30 +38,37 @@ export class BuddyService {
       }),
     ]);
 
-    await this.prisma.buddyMessage.create({ data: { tripId, role: "user", content } });
+    const userMsg = await this.prisma.buddyMessage.create({ data: { tripId, role: "user", content } });
 
-    const systemPrompt = buildSystemPrompt(trip, profile, recentPlaces);
-    const tools = [
-      makeSearchWebTool(this.search),
-      makeUpdateProfileTool(this.prisma, tripId),
-      makeRunResearchTool(this.research, tripId),
-      makeSetPlaceStatusTool(this.places),
-      makeSetTripDatesTool(this.prisma, tripId),
-    ];
+    let reply: string;
+    let actions: BuddyAction[];
 
-    const agent = buildBuddyAgent(tools, systemPrompt);
-    const lcHistory = history.map((m) =>
-      m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content),
-    );
-    const result = await agent.invoke({ messages: [...lcHistory, new HumanMessage(content)] });
+    try {
+      const systemPrompt = buildSystemPrompt(trip, profile, recentPlaces);
+      const tools = [
+        makeSearchWebTool(this.search),
+        makeUpdateProfileTool(this.prisma, tripId),
+        makeRunResearchTool(this.research, tripId),
+        makeSetPlaceStatusTool(this.places),
+        makeSetTripDatesTool(this.prisma, tripId),
+      ];
 
-    const lastMsg = result.messages.at(-1);
-    const reply =
-      typeof lastMsg?.content === "string"
-        ? lastMsg.content
-        : JSON.stringify(lastMsg?.content ?? "");
+      const agent = buildBuddyAgent(tools, systemPrompt);
+      const lcHistory = history.map((m) =>
+        m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content),
+      );
+      const result = await agent.invoke({ messages: [...lcHistory, new HumanMessage(content)] });
 
-    const actions = extractActions(result.messages);
+      const lastMsg = result.messages.at(-1);
+      reply =
+        typeof lastMsg?.content === "string"
+          ? lastMsg.content
+          : JSON.stringify(lastMsg?.content ?? "");
+      actions = extractActions(result.messages);
+    } catch (e) {
+      await this.prisma.buddyMessage.delete({ where: { id: userMsg.id } });
+      throw e;
+    }
 
     await this.prisma.buddyMessage.create({
       data: { tripId, role: "assistant", content: reply, actions: actions as object[] },

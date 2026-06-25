@@ -113,7 +113,7 @@ export function ItineraryPage() {
   };
 
   return (
-    <div style={{ padding: 16 }}>
+    <div style={{ padding: 16, paddingBottom: 48 }}>
       <TripNav id={id} />
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>

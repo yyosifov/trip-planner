@@ -61,7 +61,7 @@ export function WildlifePage() {
   const data = report?.data;
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: 20, paddingBottom: 48 }}>
       <TripNav id={id} />
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
