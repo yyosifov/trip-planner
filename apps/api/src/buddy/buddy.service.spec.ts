@@ -18,7 +18,6 @@ jest.mock("./buddy.graph", () => ({
 }));
 
 const now = new Date();
-const elevenMinutesAgo = new Date(Date.now() - 11 * 60 * 1000);
 
 const prismaMock = {
   trip: {
