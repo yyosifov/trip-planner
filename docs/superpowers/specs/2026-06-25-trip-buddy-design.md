@@ -164,9 +164,12 @@ export const makeSetPlaceStatusTool = (places: PlacesService) =>
   });
 
 // 5. setTripDates
-export const makeSetTripDatesTool = (trips: TripsService, tripId: string) =>
+export const makeSetTripDatesTool = (prisma: PrismaService, tripId: string) =>
   tool(async ({ start, end }) => {
-    await trips.updateDates(tripId, { dateWindowStart: start, dateWindowEnd: end });
+    await prisma.trip.update({
+      where: { id: tripId },
+      data: { dateWindowStart: new Date(start), dateWindowEnd: new Date(end) },
+    });
     return `Trip dates set to ${start} → ${end}.`;
   }, {
     name: "setTripDates",
@@ -208,7 +211,6 @@ export class BuddyService {
     private prisma: PrismaService,
     private research: ResearchService,
     private places: PlacesService,
-    private trips: TripsService,
     @Inject(SEARCH) private search: SearchPort,
   ) {}
 
@@ -233,7 +235,7 @@ export class BuddyService {
       makeUpdateProfileTool(this.prisma, tripId),
       makeRunResearchTool(this.research, tripId),
       makeSetPlaceStatusTool(this.places),
-      makeSetTripDatesTool(this.trips, tripId),
+      makeSetTripDatesTool(this.prisma, tripId),
     ];
 
     // 5. Build agent + invoke
@@ -251,7 +253,7 @@ export class BuddyService {
     const actions = extractActions(result.messages);
 
     // 8. Persist reply
-    await this.prisma.buddyMessage.create({ data: { tripId, role: "assistant", content: reply, actions } });
+    await this.prisma.buddyMessage.create({ data: { tripId, role: "assistant", content: reply, actions: actions as any } });
 
     return { reply, actions };
   }
@@ -280,6 +282,39 @@ export class BuddyService {
     }
     return { hasSuggestion: false };
   }
+}
+
+function extractActions(messages: BaseMessage[]): BuddyAction[] {
+  // Walk the LangGraph message list.
+  // ToolMessage objects (role === "tool") carry a `name` field equal to the tool that was called.
+  // Map each tool name to its BuddyAction type and fill in relevant fields:
+  //   "searchWeb"       → { type: "web_search", query: <tool input from preceding AIMessage.tool_calls> }
+  //   "runResearch"     → { type: "research_run", placesAdded: <parse from tool result content> }
+  //   "updateProfile"   → { type: "profile_updated", changes: <tool input.changes> }
+  //   "setPlaceStatus"  → { type: "place_status_changed", placeId, status }
+  //   "setTripDates"    → { type: "dates_updated", start, end }
+  // Pair each ToolMessage with the tool_calls entry in the immediately preceding AIMessage to get inputs.
+  // Return deduplicated (last wins per placeId for setPlaceStatus).
+  const actions: BuddyAction[] = [];
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i];
+    if (m._getType() !== "tool") continue;
+    const tm = m as ToolMessage;
+    const prevAI = messages.slice(0, i).reverse().find((x) => x._getType() === "ai") as AIMessage | undefined;
+    const call = prevAI?.tool_calls?.find((c) => c.id === tm.tool_call_id);
+    if (!call) continue;
+    switch (call.name) {
+      case "searchWeb": actions.push({ type: "web_search", query: call.args.query }); break;
+      case "runResearch": {
+        const n = parseInt(String(tm.content).match(/Added (\d+)/)?.[1] ?? "0", 10);
+        actions.push({ type: "research_run", placesAdded: n }); break;
+      }
+      case "updateProfile": actions.push({ type: "profile_updated", changes: call.args.changes }); break;
+      case "setPlaceStatus": actions.push({ type: "place_status_changed", placeId: call.args.placeId, status: call.args.status }); break;
+      case "setTripDates": actions.push({ type: "dates_updated", start: call.args.start, end: call.args.end }); break;
+    }
+  }
+  return actions;
 }
 
 function buildSystemPrompt(trip, profile, places): string {
