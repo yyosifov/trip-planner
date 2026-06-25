@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
 import { BuddyService } from "./buddy.service";
 
-const MessageInputSchema = z.object({ content: z.string().min(1).max(4000) });
+const MessageInputSchema = z.object({ content: z.string().min(1).max(10000) });
 
 @Controller("trips/:id/buddy")
 export class BuddyController {

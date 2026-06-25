@@ -56,7 +56,8 @@ export default function BuddyBar({ tripId }: Props) {
     const content = input.trim();
     if (!content || loading) return;
     setInput("");
-    await sendMessage(content);
+    const ok = await sendMessage(content);
+    if (!ok) setInput(content);
   }, [input, loading, sendMessage]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {

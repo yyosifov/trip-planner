@@ -31,7 +31,7 @@ export function useBuddy(tripId: string) {
   }, [tripId]);
 
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string): Promise<boolean> => {
       setMessages((m) => [...m, { role: "user", content }]);
       setError(null);
       setLoading(true);
@@ -42,10 +42,16 @@ export function useBuddy(tripId: string) {
         );
         setMessages((m) => [...m, { role: "assistant", content: reply, actions }]);
         invalidateFromActions(qc, tripId, actions);
+        return true;
       } catch (e) {
-        setError("Trip Buddy couldn't respond. Please try again.");
-        // Roll back the optimistic user message
+        const status = e instanceof Error ? parseInt(e.message) : 0;
+        setError(
+          status === 400
+            ? "Message too long or invalid — please shorten it and try again."
+            : "Trip Buddy couldn't respond. Please try again.",
+        );
         setMessages((m) => m.slice(0, -1));
+        return false;
       } finally {
         setLoading(false);
       }
