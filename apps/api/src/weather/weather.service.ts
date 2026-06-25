@@ -36,14 +36,15 @@ export class WeatherService {
     @Inject(WEATHER) private weather: WeatherPort,
   ) {}
 
-  async getWeather(tripId: string): Promise<WeatherResponse> {
+  async getWeather(tripId: string, city?: string): Promise<WeatherResponse> {
     const trip = await this.prisma.trip.findUnique({ where: { id: tripId } });
     if (!trip?.dateWindowStart || !trip?.dateWindowEnd) return { available: false };
 
     const windowStart = trip.dateWindowStart.toISOString().slice(0, 10);
     const windowEnd = trip.dateWindowEnd.toISOString().slice(0, 10);
 
-    const geo = await this.maps.geocode(trip.destination);
+    const locationLabel = city && city.trim() ? city.trim() : trip.destination;
+    const geo = await this.maps.geocode(locationLabel);
     if (!geo) return { available: false };
 
     const lat = round2(geo.lat);
@@ -156,7 +157,7 @@ export class WeatherService {
 
     return {
       available: true,
-      location: { name: trip.destination, lat, lng },
+      location: { name: locationLabel, lat, lng },
       window: { start: windowStart, end: windowEnd },
       forecast,
       normals,

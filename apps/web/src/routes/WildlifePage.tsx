@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { TripNav } from "../components/TripNav";
 import { toast } from "sonner";
 import { useWildlife, useGenerateWildlife } from "../api/hooks";
 import type { SpeciesToSpot, SafetyItem, PerPlaceNote } from "@trip/shared";
@@ -12,12 +13,12 @@ const RISK_COLOR: Record<string, string> = {
 
 function SpeciesCard({ s }: { s: SpeciesToSpot }) {
   return (
-    <div style={{ border: "1px solid #eee", borderRadius: 8, padding: "8px 12px", marginBottom: 6 }}>
+    <div style={{ border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px", marginBottom: 6 }}>
       <div style={{ fontWeight: 600 }}>
         {TYPE_ICON[s.type] ?? "🐾"} {s.name}{" "}
         <span title={`Kid appeal: ${s.kidAppeal}/5`}>{"★".repeat(Math.max(0, s.kidAppeal))}{"☆".repeat(Math.max(0, 5 - s.kidAppeal))}</span>
       </div>
-      {s.funFact && <div style={{ fontSize: 13, color: "#555" }}>{s.funFact}</div>}
+      {s.funFact && <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>{s.funFact}</div>}
     </div>
   );
 }
@@ -26,11 +27,11 @@ function SafetyRow({ s }: { s: SafetyItem }) {
   return (
     <li style={{ marginBottom: 4 }}>
       <span style={{ fontWeight: 600 }}>{s.animal}</span>{" "}
-      <span style={{ fontSize: 11, padding: "1px 6px", borderRadius: 10, color: "#fff", background: RISK_COLOR[s.risk] ?? "#6b7280" }}>
+      <span style={{ fontSize: 11, padding: "1px 6px", borderRadius: 10, color: "#fff", background: RISK_COLOR[s.risk] ?? "var(--fg-muted)" }}>
         {s.risk}
       </span>
       {s.danger && <span> — {s.danger}</span>}
-      {s.whatToDo && <span style={{ color: "#555" }}> ({s.whatToDo})</span>}
+      {s.whatToDo && <span style={{ color: "var(--fg-muted)" }}> ({s.whatToDo})</span>}
     </li>
   );
 }
@@ -61,13 +62,7 @@ export function WildlifePage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
-      <nav style={{ display: "flex", gap: 12, marginBottom: 16, fontSize: 14 }}>
-        <Link to={`/trips/${id}`}>Intake</Link>
-        <Link to={`/trips/${id}/discover`}>Discover</Link>
-        <Link to={`/trips/${id}/itinerary`}>Itinerary</Link>
-        <Link to={`/trips/${id}/weather`}>Weather</Link>
-        <span style={{ fontWeight: 600 }}>Wildlife</span>
-      </nav>
+      <TripNav id={id} />
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <h1>🦌 Wildlife & Fauna</h1>
@@ -114,7 +109,7 @@ export function WildlifePage() {
           )}
 
           {report?.generatedAt && (
-            <p style={{ fontSize: 12, color: "#888", marginTop: 24 }}>
+            <p style={{ fontSize: 12, color: "var(--fg-subtle)", marginTop: 24 }}>
               Generated {new Date(report.generatedAt).toLocaleString()}
             </p>
           )}

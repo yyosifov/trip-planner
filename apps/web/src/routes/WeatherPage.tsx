@@ -1,91 +1,144 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { useWeather, useUpdateTrip } from "../api/hooks";
+import { useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { useWeather, useUpdateTrip, useTrip } from "../api/hooks";
+import { TripNav } from "../components/TripNav";
+import * as T from "../theme";
 import type { DailyWeather } from "@trip/shared";
 
-function fmt(n: number | null | undefined, unit: string): string {
-  return n == null ? "—" : `${Math.round(n)}${unit}`;
+function fmt(n: number | null | undefined, decimals = 0): string {
+  return n == null ? "—" : n.toFixed(decimals);
 }
 
-function ForecastCard({ d }: { d: DailyWeather }) {
-  return (
-    <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: "8px 12px", minWidth: 90, textAlign: "center" }}>
-      <div style={{ fontSize: 11, color: "#6b7280" }}>{d.date.slice(5)}</div>
-      <div style={{ fontWeight: 600 }}>{fmt(d.tMaxC, "°")} / {fmt(d.tMinC, "°")}</div>
-      <div style={{ fontSize: 11 }}>{fmt(d.precipMm, "mm")} · {fmt(d.windMaxKmh, "km/h")}</div>
-    </div>
-  );
+function precipBg(mm: number | null | undefined): string | undefined {
+  if (mm == null || mm < 1) return undefined;
+  if (mm < 5) return "rgba(59,130,246,0.12)";
+  if (mm < 15) return "rgba(59,130,246,0.30)";
+  return "#3b82f6";
 }
 
-function HistoryCell({ d }: { d: DailyWeather }) {
-  return (
-    <td style={{ padding: "4px 8px", textAlign: "center", fontSize: 12, whiteSpace: "nowrap", verticalAlign: "top" }}>
-      {fmt(d.tMaxC, "°")}/{fmt(d.tMinC, "°")}
-      <br />
-      <span style={{ color: "#6b7280" }}>{fmt(d.precipMm, "mm")} · {fmt(d.windMaxKmh, "km/h")}</span>
-    </td>
-  );
+function precipFg(mm: number | null | undefined): string {
+  return mm != null && mm >= 15 ? "#ffffff" : "var(--fg)";
 }
 
-function Nav({ id }: { id: string }) {
-  return (
-    <nav style={{ display: "flex", gap: 12, marginBottom: 16, fontSize: 14 }}>
-      <Link to={`/trips/${id}`}>Intake</Link>
-      <Link to={`/trips/${id}/discover`}>Discover</Link>
-      <Link to={`/trips/${id}/itinerary`}>Itinerary</Link>
-      <Link to={`/trips/${id}/wildlife`}>Wildlife</Link>
-      <span style={{ fontWeight: 600 }}>Weather</span>
-    </nav>
-  );
-}
+// ── Date editor ───────────────────────────────────────────────────────────────
 
-function DatePicker({ id, initialStart, initialEnd, onCancel }: {
-  id: string;
-  initialStart?: string;
-  initialEnd?: string;
-  onCancel?: () => void;
+function DateEditor({ id, initialStart, initialEnd, onDone }: {
+  id: string; initialStart?: string; initialEnd?: string; onDone: () => void;
 }) {
   const [start, setStart] = useState(initialStart ?? "");
   const [end, setEnd] = useState(initialEnd ?? "");
   const update = useUpdateTrip(id);
-
   const save = () => {
     if (!start || !end) return;
-    update.mutate({ dateWindowStart: start, dateWindowEnd: end });
+    update.mutate({ dateWindowStart: start, dateWindowEnd: end }, { onSuccess: onDone });
   };
-
   return (
-    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
+    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
       <input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
-      <span style={{ color: "#6b7280" }}>→</span>
+      <span style={T.text.muted}>→</span>
       <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} min={start} />
-      <button onClick={save} disabled={!start || !end || update.isPending} style={{ padding: "4px 14px" }}>
-        {update.isPending ? "Saving…" : "Save & load weather"}
+      <button onClick={save} disabled={!start || !end || update.isPending} style={T.btn.primary}>
+        {update.isPending ? "Saving…" : "Save"}
       </button>
-      {onCancel && (
-        <button onClick={onCancel} style={{ padding: "4px 10px", background: "none", border: "1px solid #ddd", cursor: "pointer" }}>
-          Cancel
-        </button>
-      )}
-      {update.isError && <span style={{ color: "#ef4444", fontSize: 13 }}>Save failed</span>}
+      <button onClick={onDone} style={T.btn.ghost}>Cancel</button>
+      {update.isError && <span style={{ ...T.text.danger, fontSize: 12 }}>Save failed</span>}
     </div>
   );
 }
 
+// ── City selector ─────────────────────────────────────────────────────────────
+
+function CitySelector({ waypoints, destination, active, onChange }: {
+  waypoints: string[]; destination: string; active: string; onChange: (city: string) => void;
+}) {
+  const [input, setInput] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const chips = [...new Set([...waypoints, destination])];
+  const isCustom = !chips.includes(active);
+
+  const submit = () => {
+    const v = input.trim();
+    if (v) { onChange(v); setInput(""); }
+  };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <span style={{ ...T.label }}>Location</span>
+      {chips.map((city) => (
+        <button key={city} onClick={() => onChange(city)} style={city === active && !isCustom ? T.chip.active : T.chip.base}>
+          {city}
+        </button>
+      ))}
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <input
+          ref={inputRef}
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
+          placeholder="Other city…"
+          style={{ ...T.input, width: 130, borderRadius: "var(--r-pill)", ...(isCustom && { borderColor: "var(--primary)", boxShadow: "0 0 0 3px var(--primary-soft)" }) }}
+        />
+        <button onClick={submit} disabled={!input.trim()} style={{ ...T.btn.ghost, borderRadius: "var(--r-pill)", padding: "4px 12px" }}>
+          →
+        </button>
+      </div>
+      {isCustom && <span style={{ ...T.text.primary, fontSize: 12, fontWeight: 500 }}>📍 {active}</span>}
+    </div>
+  );
+}
+
+// ── Forecast card ─────────────────────────────────────────────────────────────
+
+function ForecastCard({ d }: { d: DailyWeather }) {
+  const bg = precipBg(d.precipMm);
+  const fg = precipFg(d.precipMm);
+  return (
+    <div style={{ ...T.card, padding: "10px 14px", minWidth: 84, textAlign: "center", background: bg ?? "var(--card)", color: fg }}>
+      <div style={{ fontSize: 11, marginBottom: 4, opacity: 0.65 }}>{d.date.slice(5)}</div>
+      <div style={{ fontWeight: 700, fontSize: 15 }}>{fmt(d.tMaxC)}° / {fmt(d.tMinC)}°</div>
+      <div style={{ fontSize: 11, marginTop: 4, opacity: 0.8 }}>
+        {d.precipMm != null && d.precipMm > 0 ? `🌧 ${fmt(d.precipMm)}mm  ` : ""}
+        💨 {fmt(d.windMaxKmh)}km/h
+      </div>
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
 export function WeatherPage() {
   const { id = "" } = useParams();
-  const { data, isLoading } = useWeather(id);
+  const { data: trip } = useTrip(id);
   const [editingDates, setEditingDates] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
 
-  if (isLoading) return <div style={{ padding: 20 }}>Loading…</div>;
+  const waypointCities = (trip?.waypoints ?? []).map((w) => w.city);
+  const destination = trip?.destination ?? "";
+  const activeCity = selectedCity ?? waypointCities[0] ?? destination;
+
+  const { data, isLoading } = useWeather(id, activeCity || undefined);
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: "20px 24px" }}>
+        <TripNav id={id} />
+        <p style={T.text.muted}>Loading…</p>
+      </div>
+    );
+  }
 
   if (!data?.available) {
     return (
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
-        <Nav id={id} />
-        <h1>⛅ Weather</h1>
-        <p style={{ color: "#555" }}>Set your trip dates to see historical data and forecasts.</p>
-        <DatePicker id={id} />
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "20px 24px" }}>
+        <TripNav id={id} />
+        <h2 style={{ marginBottom: 8 }}>⛅ Weather</h2>
+        <p style={{ ...T.text.muted, marginBottom: 20 }}>
+          Set your trip dates to see historical weather data and forecasts.
+        </p>
+        <div style={{ ...T.cardPadded }}>
+          <DateEditor id={id} onDone={() => {}} />
+        </div>
       </div>
     );
   }
@@ -94,84 +147,133 @@ export function WeatherPage() {
   const dates = years[0]?.days.map((d) => d.date) ?? [];
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
-      <Nav id={id} />
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 24px 48px" }}>
+      <TripNav id={id} />
 
-      <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 4 }}>
-        <h1 style={{ margin: 0 }}>⛅ Weather — {location?.name}</h1>
+      {/* Header card */}
+      <div style={{ ...T.cardPadded, marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>⛅ Weather — {location?.name}</h2>
+          {!editingDates && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ ...T.text.muted, fontSize: 13 }}>📅 {win?.start} → {win?.end}</span>
+              <button onClick={() => setEditingDates(true)} style={T.btn.ghost}>Edit dates</button>
+            </div>
+          )}
+        </div>
+        {editingDates && (
+          <div style={{ marginBottom: 12 }}>
+            <DateEditor id={id} initialStart={win?.start} initialEnd={win?.end} onDone={() => setEditingDates(false)} />
+          </div>
+        )}
+        <CitySelector waypoints={waypointCities} destination={destination} active={activeCity} onChange={setSelectedCity} />
       </div>
 
-      {editingDates ? (
-        <DatePicker
-          id={id}
-          initialStart={win?.start}
-          initialEnd={win?.end}
-          onCancel={() => setEditingDates(false)}
-        />
-      ) : (
-        <p style={{ color: "#555", marginTop: 4, marginBottom: 20 }}>
-          {win?.start} → {win?.end}
-          {" "}
-          <button
-            onClick={() => setEditingDates(true)}
-            style={{ fontSize: 12, padding: "1px 8px", marginLeft: 4, cursor: "pointer" }}
-          >
-            Edit dates
-          </button>
-        </p>
+      {/* Climate normals */}
+      {normals && (
+        <div style={{ ...T.cardPadded, marginBottom: 12, display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div>
+            <div style={T.label}>Temp (avg)</div>
+            <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4 }}>{fmt(normals.tMaxC)}° / {fmt(normals.tMinC)}°</div>
+          </div>
+          <div>
+            <div style={T.label}>Rain (avg/day)</div>
+            <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4 }}>🌧 {fmt(normals.precipMmAvg, 1)} mm</div>
+          </div>
+          <div>
+            <div style={T.label}>Wind (max avg)</div>
+            <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4 }}>💨 {fmt(normals.windMaxKmh)} km/h</div>
+          </div>
+          <div style={{ ...T.text.subtle, fontSize: 12 }}>5-year historical average</div>
+        </div>
       )}
 
+      {/* Forecast */}
       {forecast ? (
-        <section style={{ marginBottom: 24 }}>
-          <h2>Forecast</h2>
+        <div style={{ ...T.cardPadded, marginBottom: 12 }}>
+          <div style={{ ...T.label, marginBottom: 10 }}>Forecast</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {forecast.map((d) => <ForecastCard key={d.date} d={d} />)}
           </div>
-        </section>
+        </div>
       ) : (
-        <p style={{ color: "#6b7280", marginBottom: 24 }}>
+        <p style={{ ...T.text.subtle, fontSize: 13, marginBottom: 12 }}>
           Forecast available ~16 days before your trip.
         </p>
       )}
 
-      {normals && (
-        <section style={{ marginBottom: 24, padding: 16, background: "#f9fafb", borderRadius: 8 }}>
-          <h2 style={{ marginTop: 0, marginBottom: 8 }}>Climate normals (5-yr avg)</h2>
-          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-            <span>🌡 {fmt(normals.tMaxC, "°")} / {fmt(normals.tMinC, "°")}</span>
-            <span>🌧 {fmt(normals.precipMmAvg, "mm/day avg")}</span>
-            <span>💨 {fmt(normals.windMaxKmh, " km/h")}</span>
-          </div>
-        </section>
-      )}
-
+      {/* Historical table */}
       {years.length > 0 && (
-        <section>
-          <h2>Historical</h2>
+        <div style={{ ...T.card, overflow: "hidden" }}>
+          <div style={{ padding: "14px 20px 10px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <div>
+              <div style={T.label}>Historical data</div>
+              <p style={{ ...T.text.subtle, fontSize: 12, marginTop: 4 }}>
+                Max/min °C · rain mm · wind km/h per day
+              </p>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <span style={{ ...T.text.subtle, fontSize: 11 }}>🌧 Rain:</span>
+              {[
+                { bg: "var(--surface-2)", label: "< 1 mm", fg: "var(--fg-subtle)" },
+                { bg: "rgba(59,130,246,0.12)", label: "1–4 mm", fg: "var(--fg)" },
+                { bg: "rgba(59,130,246,0.30)", label: "5–14 mm", fg: "var(--fg)" },
+                { bg: "#3b82f6", label: "≥ 15 mm", fg: "#fff" },
+              ].map(({ bg, label, fg }) => (
+                <span
+                  key={label}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "3px 8px",
+                    borderRadius: "var(--r-sm)",
+                    background: bg,
+                    color: fg,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    border: "1px solid rgba(59,130,246,0.20)",
+                  }}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ borderCollapse: "collapse", fontSize: 13, width: "100%" }}>
+            <table style={{ borderCollapse: "collapse", fontSize: 13, width: "100%", minWidth: 560 }}>
               <thead>
-                <tr style={{ background: "#f3f4f6" }}>
-                  <th style={{ padding: "6px 8px", textAlign: "left", fontWeight: 600 }}>Date</th>
+                <tr style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}>
+                  <th style={{ padding: "8px 14px", textAlign: "left", fontWeight: 600, color: "var(--fg-muted)", fontSize: 12 }}>Date</th>
                   {years.map((y) => (
-                    <th key={y.year} style={{ padding: "6px 8px", textAlign: "center", fontWeight: 600 }}>{y.year}</th>
+                    <th key={y.year} style={{ padding: "8px 14px", textAlign: "center", fontWeight: 600, color: "var(--fg-muted)", fontSize: 12 }}>{y.year}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {dates.map((date, rowIdx) => (
-                  <tr key={date} style={{ background: rowIdx % 2 === 0 ? "#fff" : "#f9fafb" }}>
-                    <td style={{ padding: "4px 8px", fontWeight: 500 }}>{date.slice(5)}</td>
+                  <tr key={date} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <td style={{ padding: "7px 14px", fontWeight: 600, fontSize: 12, background: "var(--card)", whiteSpace: "nowrap" }}>
+                      {date.slice(5)}
+                    </td>
                     {years.map((y) => {
                       const d = y.days[rowIdx];
-                      return d ? <HistoryCell key={y.year} d={d} /> : <td key={y.year} style={{ padding: "4px 8px", textAlign: "center", color: "#9ca3af" }}>—</td>;
+                      if (!d) return <td key={y.year} style={{ padding: "7px 14px", textAlign: "center", color: "var(--fg-subtle)" }}>—</td>;
+                      const bg = precipBg(d.precipMm);
+                      const fg = precipFg(d.precipMm);
+                      return (
+                        <td key={y.year} style={{ padding: "7px 14px", textAlign: "center", background: bg ?? (rowIdx % 2 === 0 ? "var(--card)" : "var(--surface-2)"), color: fg, whiteSpace: "nowrap" }}>
+                          <div style={{ fontWeight: 600 }}>{fmt(d.tMaxC)}° / {fmt(d.tMinC)}°</div>
+                          <div style={{ fontSize: 11, marginTop: 1, opacity: 0.75 }}>{fmt(d.precipMm)}mm · {fmt(d.windMaxKmh)}km/h</div>
+                        </td>
+                      );
                     })}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
       )}
     </div>
   );

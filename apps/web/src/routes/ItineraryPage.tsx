@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { TripNav } from "../components/TripNav";
 import { useBoard, useCreateDay, useAddItem, useSuggestBackups, usePlaces, type Place, type BoardDay } from "../api/hooks";
 
 function DayCol({ day, likedPlaces, onAddItem, onSuggest }: {
@@ -24,19 +25,19 @@ function DayCol({ day, likedPlaces, onAddItem, onSuggest }: {
   const available = likedPlaces.filter((p) => !usedIds.has(p.id));
 
   return (
-    <div style={{ minWidth: 200, maxWidth: 240, border: "1px solid #ddd", borderRadius: 6, padding: 10 }}>
+    <div style={{ minWidth: 200, maxWidth: 240, border: "1px solid var(--border)", borderRadius: 6, padding: 10 }}>
       <h4 style={{ margin: "0 0 8px" }}>Day {day.dayIndex} {day.baseCity && `— ${day.baseCity}`}</h4>
 
       <ul style={{ listStyle: "none", padding: 0, margin: "0 0 8px" }}>
         {day.items.map((item) => (
-          <li key={item.id} style={{ fontSize: 13, padding: "3px 0", borderBottom: "1px solid #f0f0f0" }}>
+          <li key={item.id} style={{ fontSize: 13, padding: "3px 0", borderBottom: "1px solid var(--border)" }}>
             {item.place.name} {item.place.weatherDependent ? "🌦" : ""}
-            <span style={{ fontSize: 11, color: "#888", marginLeft: 4 }}>
+            <span style={{ fontSize: 11, color: "var(--fg-subtle)", marginLeft: 4 }}>
               {item.place.category}
             </span>
           </li>
         ))}
-        {day.items.length === 0 && <li style={{ fontSize: 12, color: "#aaa" }}>No items yet</li>}
+        {day.items.length === 0 && <li style={{ fontSize: 12, color: "var(--fg-subtle)" }}>No items yet</li>}
       </ul>
 
       {/* Add a liked place */}
@@ -113,9 +114,7 @@ export function ItineraryPage() {
 
   return (
     <div style={{ padding: 16 }}>
-      <nav style={{ marginBottom: 12, fontSize: 13 }}>
-        <Link to={`/trips/${id}/discover`}>← Discover</Link>
-      </nav>
+      <TripNav id={id} />
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
         <h2 style={{ margin: 0 }}>Itinerary</h2>
@@ -131,7 +130,7 @@ export function ItineraryPage() {
       </div>
 
       {board?.length === 0 && (
-        <p style={{ color: "#888" }}>No days yet — add a day above.</p>
+        <p style={{ color: "var(--fg-subtle)" }}>No days yet — add a day above.</p>
       )}
 
       <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 16 }}>
@@ -151,7 +150,7 @@ export function ItineraryPage() {
 
       {(places?.length ?? 0) > 0 && (
         <details style={{ marginTop: 16 }}>
-          <summary style={{ cursor: "pointer", fontSize: 13, color: "#555" }}>
+          <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--fg-muted)" }}>
             Liked places pool ({places?.length})
           </summary>
           <ul style={{ fontSize: 13, marginTop: 6 }}>

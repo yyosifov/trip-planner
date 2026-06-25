@@ -12,6 +12,8 @@ export interface Trip {
   id: string;
   name: string;
   destination: string;
+  dateWindowStart: string | null;
+  dateWindowEnd: string | null;
   daysMin: number;
   daysMax: number;
   routeType: string;
@@ -166,8 +168,8 @@ export function useGenerateWildlife(id: string) {
   });
 }
 
-export const useWeather = (id: string) =>
+export const useWeather = (id: string, city?: string) =>
   useQuery({
-    queryKey: ["weather", id],
-    queryFn: () => api.get<WeatherResponse>(`/trips/${id}/weather`),
+    queryKey: ["weather", id, city ?? ""],
+    queryFn: () => api.get<WeatherResponse>(`/trips/${id}/weather${city ? `?city=${encodeURIComponent(city)}` : ""}`),
   });

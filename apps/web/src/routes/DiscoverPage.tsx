@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { TripNav } from "../components/TripNav";
 import { toast } from "sonner";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import { usePlaces, useSetPlaceStatus, useRunResearch, type Place } from "../api/hooks";
@@ -11,7 +12,7 @@ const CAT_ICON: Record<string, string> = {
 };
 const CAT_COLOR: Record<string, string> = {
   hike: "#10b981", activity: "#f59e0b", museum: "#8b5cf6", beach: "#06b6d4",
-  food: "#ef4444", sight: "#3b82f6", other: "#6b7280",
+  food: "#ef4444", sight: "#3b82f6", other: "var(--fg-muted)",
 };
 const DIFFICULTY_COLOR: Record<string, string> = {
   easy: "#22c55e", moderate: "#f59e0b", hard: "#ef4444",
@@ -43,17 +44,17 @@ function PlaceCard({ place, selected, onClick, onStatus }: {
   onStatus: (s: PlaceStatus) => void;
 }) {
   const icon = CAT_ICON[place.category] ?? "📍";
-  const catColor = CAT_COLOR[place.category] ?? "#6b7280";
-  const diffColor = DIFFICULTY_COLOR[place.difficulty] ?? "#6b7280";
+  const catColor = CAT_COLOR[place.category] ?? "var(--fg-muted)";
+  const diffColor = DIFFICULTY_COLOR[place.difficulty] ?? "var(--fg-muted)";
 
   return (
     <div
       onClick={onClick}
       style={{
-        padding: "10px 12px", borderBottom: "1px solid #f0f0f0",
-        background: selected ? "#eff6ff" : "#fff",
+        padding: "10px 12px", borderBottom: "1px solid var(--border)",
+        background: selected ? "var(--primary-soft)" : "var(--card)",
         cursor: "pointer", transition: "background 0.1s",
-        borderLeft: selected ? "3px solid #3b82f6" : "3px solid transparent",
+        borderLeft: selected ? "3px solid var(--primary)" : "3px solid transparent",
       }}
     >
       {/* Header row */}
@@ -78,13 +79,13 @@ function PlaceCard({ place, selected, onClick, onStatus }: {
       </div>
 
       {/* Description snippet */}
-      <p style={{ fontSize: 12, color: "#555", margin: "4px 0 6px 26px", lineHeight: 1.4 }}>
+      <p style={{ fontSize: 12, color: "var(--fg-muted)", margin: "4px 0 6px 26px", lineHeight: 1.4 }}>
         {place.description.slice(0, 90)}{place.description.length > 90 ? "…" : ""}
       </p>
 
       {/* Duration */}
       {place.estDurationMin > 0 && (
-        <div style={{ fontSize: 11, color: "#888", marginBottom: 6, marginLeft: 26 }}>
+        <div style={{ fontSize: 11, color: "var(--fg-subtle)", marginBottom: 6, marginLeft: 26 }}>
           ⏱ ~{place.estDurationMin >= 60 ? `${Math.round(place.estDurationMin / 60)}h` : `${place.estDurationMin}min`}
           {!place.lat && <span style={{ color: "#f59e0b", marginLeft: 6 }}>⚠ no map pin</span>}
         </div>
@@ -117,15 +118,15 @@ function DetailPanel({ place, onClose, onStatus }: {
   onStatus: (s: PlaceStatus) => void;
 }) {
   const icon = CAT_ICON[place.category] ?? "📍";
-  const catColor = CAT_COLOR[place.category] ?? "#6b7280";
+  const catColor = CAT_COLOR[place.category] ?? "var(--fg-muted)";
   const mapsSearch = `https://www.google.com/maps/search/${encodeURIComponent(place.name)}`;
   const ytSearch = `https://www.youtube.com/results?search_query=${encodeURIComponent(place.name + " Norway")}`;
   const reviewsSearch = `https://www.tripadvisor.com/Search?q=${encodeURIComponent(place.name)}`;
 
   return (
     <div style={{
-      width: 360, borderRight: "1px solid #eee", display: "flex", flexDirection: "column",
-      overflowY: "auto", background: "#fff",
+      width: 360, borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column",
+      overflowY: "auto", background: "var(--card)",
     }}>
       {/* Photo / placeholder */}
       {place.photoUrl ? (
@@ -145,7 +146,7 @@ function DetailPanel({ place, onClose, onStatus }: {
         {/* Name + close */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0, fontSize: 16, lineHeight: 1.3, flex: 1 }}>{place.name}</h3>
-          <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18, color: "#888", marginLeft: 8, padding: 0 }}>✕</button>
+          <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18, color: "var(--fg-subtle)", marginLeft: 8, padding: 0 }}>✕</button>
         </div>
 
         {/* Badges row */}
@@ -182,7 +183,7 @@ function DetailPanel({ place, onClose, onStatus }: {
         </div>
 
         {/* Description */}
-        <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, margin: "0 0 12px" }}>
+        <p style={{ fontSize: 13, color: "var(--fg)", lineHeight: 1.6, margin: "0 0 12px" }}>
           {place.description}
         </p>
 
@@ -190,7 +191,7 @@ function DetailPanel({ place, onClose, onStatus }: {
         {place.tags?.length > 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 14 }}>
             {(place.tags as string[]).map((t) => (
-              <span key={t} style={{ fontSize: 11, padding: "2px 7px", borderRadius: 10, background: "#f3f4f6", color: "#374151" }}>
+              <span key={t} style={{ fontSize: 11, padding: "2px 7px", borderRadius: 10, background: "var(--surface-3)", color: "var(--fg)" }}>
                 {t}
               </span>
             ))}
@@ -253,7 +254,7 @@ function PlacePin({ place, selected, onClick }: { place: Place; selected: boolea
       <Popup>
         <strong style={{ fontSize: 13 }}>{place.name}</strong>
         <br />
-        <span style={{ fontSize: 12, color: "#555" }}>
+        <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>
           {CAT_ICON[place.category]} {place.category} · {place.difficulty}
         </span>
       </Popup>
@@ -310,7 +311,7 @@ export function DiscoverPage() {
       {/* Research banner */}
       {research.isPending && (
         <div style={{
-          background: "#eff6ff", borderBottom: "1px solid #bfdbfe",
+          background: "var(--primary-soft)", borderBottom: "1px solid var(--primary-border)",
           padding: "8px 16px", display: "flex", alignItems: "center", gap: 10, fontSize: 13,
         }}>
           <span style={{ display: "inline-block", width: 14, height: 14, borderRadius: "50%", border: "2px solid #3b82f6", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
@@ -320,18 +321,16 @@ export function DiscoverPage() {
       )}
 
       {/* Top bar */}
-      <div style={{ padding: "8px 16px", borderBottom: "1px solid #eee", display: "flex", gap: 12, alignItems: "center" }}>
-        <Link to={`/trips/${id}`} style={{ fontSize: 13 }}>← Interview</Link>
-        <Link to={`/trips/${id}/wildlife`} style={{ fontSize: 13 }}>Wildlife</Link>
-        <Link to={`/trips/${id}/weather`} style={{ fontSize: 13 }}>Weather</Link>
-        <strong style={{ flex: 1 }}>Discover Places</strong>
-        <button onClick={runResearch} disabled={research.isPending} style={{ padding: "4px 12px", fontSize: 13 }}>
+      <div style={{ padding: "6px 12px", borderBottom: "1px solid var(--border)", display: "flex", gap: 8, alignItems: "center", background: "var(--card)" }}>
+        <TripNav id={id} mb={0} />
+        <div style={{ flex: 1 }} />
+        <button onClick={runResearch} disabled={research.isPending} style={{ padding: "5px 12px", fontSize: 13, borderRadius: 6 }}>
           {research.isPending ? "Researching…" : "🔍 Run research"}
         </button>
         <button
           disabled={likedCount === 0}
           onClick={() => navigate(`/trips/${id}/itinerary`)}
-          style={{ padding: "4px 12px", fontSize: 13, background: "#0070f3", color: "#fff", border: "none", borderRadius: 4, cursor: likedCount > 0 ? "pointer" : "not-allowed", opacity: likedCount > 0 ? 1 : 0.5 }}
+          style={{ padding: "5px 12px", fontSize: 13, background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, cursor: likedCount > 0 ? "pointer" : "not-allowed", opacity: likedCount > 0 ? 1 : 0.5 }}
         >
           Plan itinerary ({likedCount} liked) →
         </button>
@@ -339,9 +338,9 @@ export function DiscoverPage() {
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* Left: list */}
-        <div style={{ width: 300, borderRight: "1px solid #eee", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+        <div style={{ width: 300, borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
           {/* Category filter */}
-          <div style={{ padding: "6px 8px", borderBottom: "1px solid #f0f0f0", display: "flex", flexWrap: "wrap", gap: 4 }}>
+          <div style={{ padding: "6px 8px", borderBottom: "1px solid var(--border)", display: "flex", flexWrap: "wrap", gap: 4 }}>
             {CATEGORIES.map((c) => (
               <button key={c} onClick={() => setCatFilter(c)} style={{
                 fontSize: 11, padding: "2px 7px", borderRadius: 10, border: "none", cursor: "pointer",
@@ -353,7 +352,7 @@ export function DiscoverPage() {
             ))}
           </div>
           {/* Status filter */}
-          <div style={{ padding: "4px 8px", borderBottom: "1px solid #f0f0f0", display: "flex", gap: 4 }}>
+          <div style={{ padding: "4px 8px", borderBottom: "1px solid var(--border)", display: "flex", gap: 4 }}>
             {STATUS_FILTERS.map((f) => (
               <button key={f} onClick={() => setStatusFilter(f)} style={{
                 fontSize: 11, padding: "2px 7px", borderRadius: 10, border: "none", cursor: "pointer",
@@ -367,7 +366,7 @@ export function DiscoverPage() {
 
           {/* Segment filter */}
           {segments.length > 0 && (
-            <div style={{ padding: "6px 8px", borderBottom: "1px solid #f0f0f0", display: "flex", flexWrap: "wrap", gap: 4 }}>
+            <div style={{ padding: "6px 8px", borderBottom: "1px solid var(--border)", display: "flex", flexWrap: "wrap", gap: 4 }}>
               {["all", ...segments].map((s) => (
                 <button
                   key={s}
@@ -387,14 +386,14 @@ export function DiscoverPage() {
           )}
 
           {/* Count */}
-          <div style={{ padding: "4px 12px", fontSize: 11, color: "#9ca3af", borderBottom: "1px solid #f0f0f0" }}>
+          <div style={{ padding: "4px 12px", fontSize: 11, color: "var(--fg-subtle)", borderBottom: "1px solid var(--border)" }}>
             {visible.length} place{visible.length !== 1 ? "s" : ""}
           </div>
 
           <div style={{ overflowY: "auto", flex: 1 }}>
-            {isLoading && <p style={{ padding: 12, color: "#888" }}>Loading…</p>}
+            {isLoading && <p style={{ padding: 12, color: "var(--fg-subtle)" }}>Loading…</p>}
             {!isLoading && visible.length === 0 && (
-              <p style={{ padding: 12, color: "#888", fontSize: 13 }}>
+              <p style={{ padding: 12, color: "var(--fg-subtle)", fontSize: 13 }}>
                 {places?.length === 0 ? "No places yet — run research." : "No places match filters."}
               </p>
             )}
