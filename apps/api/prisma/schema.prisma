@@ -26,6 +26,7 @@ model Trip {
   wildlifeReport        WildlifeReport?
   maxDrivingHoursPerDay Float?
   waypoints             Waypoint[]
+  buddyMessages         BuddyMessage[]
 }
 
 model Waypoint {
@@ -142,4 +143,14 @@ model WeatherDaily {
   fetchedAt  DateTime @default(now())
 
   @@unique([lat, lng, date, source])
+}
+
+model BuddyMessage {
+  id        String   @id @default(cuid())
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId    String
+  role      String
+  content   String
+  actions   Json?
+  createdAt DateTime @default(now())
 }
