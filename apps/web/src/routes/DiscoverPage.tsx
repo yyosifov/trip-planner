@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { TripNav } from "../components/TripNav";
 import { toast } from "sonner";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
