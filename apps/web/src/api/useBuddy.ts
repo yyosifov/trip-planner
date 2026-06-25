@@ -48,7 +48,9 @@ export function useBuddy(tripId: string) {
         setError(
           status === 400
             ? "Message too long or invalid — please shorten it and try again."
-            : "Trip Buddy couldn't respond. Please try again.",
+            : status === 503
+              ? "AI quota exceeded — please try again in a minute."
+              : "Trip Buddy couldn't respond. Please try again.",
         );
         setMessages((m) => m.slice(0, -1));
         return false;

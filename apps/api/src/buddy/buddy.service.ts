@@ -1,9 +1,9 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, ServiceUnavailableException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { ResearchService } from "../research/research.service";
 import { PlacesService } from "../places/places.service";
 import { SEARCH, SearchPort } from "../ai/ports";
-import { buildBuddyAgent, buildSystemPrompt, extractActions } from "./buddy.graph";
+import { invokeAgentWithFallback, buildSystemPrompt, extractActions } from "./buddy.graph";
 import {
   makeSearchWebTool,
   makeUpdateProfileTool,
@@ -53,12 +53,11 @@ export class BuddyService {
         makeSetTripDatesTool(this.prisma, tripId),
       ];
 
-      const agent = buildBuddyAgent(tools, systemPrompt);
       // Simplified: prior tool call/result messages are omitted — sufficient for single-turn ReAct history
       const lcHistory = history.map((m) =>
         m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content),
       );
-      const result = await agent.invoke({ messages: [...lcHistory, new HumanMessage(content)] });
+      const result = await invokeAgentWithFallback(tools, systemPrompt, [...lcHistory, new HumanMessage(content)]);
 
       const lastMsg = result.messages.at(-1);
       reply =
@@ -68,6 +67,9 @@ export class BuddyService {
       actions = extractActions(result.messages);
     } catch (e) {
       await this.prisma.buddyMessage.delete({ where: { id: userMsg.id } });
+      if (e instanceof Error && (e.message.includes("429") || e.message.includes("quota"))) {
+        throw new ServiceUnavailableException("AI quota exceeded — please try again in a minute.");
+      }
       throw e;
     }
 

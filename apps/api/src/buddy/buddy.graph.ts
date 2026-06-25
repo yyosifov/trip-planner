@@ -4,12 +4,33 @@ import { BaseMessage, AIMessage, ToolMessage } from "@langchain/core/messages";
 import type { StructuredToolInterface } from "@langchain/core/tools";
 import type { BuddyAction } from "@trip/shared";
 
-export function buildBuddyAgent(tools: StructuredToolInterface[], systemPrompt: string) {
-  const llm = new ChatGoogleGenerativeAI({
-    model: "gemini-2.0-flash",
-    apiKey: process.env.GEMINI_API_KEY,
-  });
+const BUDDY_MODEL_CHAIN = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+
+function isQuotaError(e: unknown): boolean {
+  const msg = String((e as { message?: string })?.message ?? e);
+  return msg.includes("429") || msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED");
+}
+
+export function buildBuddyAgent(tools: StructuredToolInterface[], systemPrompt: string, model: string) {
+  const llm = new ChatGoogleGenerativeAI({ model, apiKey: process.env.GEMINI_API_KEY });
   return createReactAgent({ llm, tools, stateModifier: systemPrompt });
+}
+
+export async function invokeAgentWithFallback(
+  tools: StructuredToolInterface[],
+  systemPrompt: string,
+  messages: BaseMessage[],
+): Promise<{ messages: BaseMessage[] }> {
+  for (let i = 0; i < BUDDY_MODEL_CHAIN.length; i++) {
+    const model = BUDDY_MODEL_CHAIN[i];
+    try {
+      return await buildBuddyAgent(tools, systemPrompt, model).invoke({ messages });
+    } catch (e) {
+      if (isQuotaError(e) && i < BUDDY_MODEL_CHAIN.length - 1) continue;
+      throw e;
+    }
+  }
+  throw new Error("All Gemini models quota-exceeded");
 }
 
 type TripCtx = {
