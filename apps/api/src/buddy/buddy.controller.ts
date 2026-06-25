@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UsePipes } from "@nestjs/common";
+import { Controller, Post, Get, Body, Param } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
 import { BuddyService } from "./buddy.service";
@@ -10,8 +10,7 @@ export class BuddyController {
   constructor(private buddy: BuddyService) {}
 
   @Post("message")
-  @UsePipes(new ZodValidationPipe(MessageInputSchema))
-  postMessage(@Param("id") id: string, @Body() body: { content: string }) {
+  postMessage(@Param("id") id: string, @Body(new ZodValidationPipe(MessageInputSchema)) body: { content: string }) {
     return this.buddy.postMessage(id, body.content);
   }
 
