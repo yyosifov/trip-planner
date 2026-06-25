@@ -1,4 +1,4 @@
-import { Inject, Injectable, ServiceUnavailableException } from "@nestjs/common";
+import { Inject, Injectable, Logger, ServiceUnavailableException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { ResearchService } from "../research/research.service";
 import { PlacesService } from "../places/places.service";
@@ -14,8 +14,12 @@ import {
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import type { BuddyAction, BuddySuggestion } from "@trip/shared";
 
+const AGENT_TIMEOUT_MS = 90_000;
+
 @Injectable()
 export class BuddyService {
+  private readonly logger = new Logger(BuddyService.name);
+
   constructor(
     private prisma: PrismaService,
     private research: ResearchService,
@@ -24,6 +28,7 @@ export class BuddyService {
   ) {}
 
   async postMessage(tripId: string, content: string): Promise<{ reply: string; actions: BuddyAction[] }> {
+    this.logger.log(`postMessage start tripId=${tripId}`);
     const [trip, profile, recentPlaces, history] = await Promise.all([
       this.prisma.trip.findUniqueOrThrow({
         where: { id: tripId },
@@ -57,7 +62,15 @@ export class BuddyService {
       const lcHistory = history.map((m) =>
         m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content),
       );
-      const result = await invokeAgentWithFallback(tools, systemPrompt, [...lcHistory, new HumanMessage(content)]);
+      this.logger.log(`invoking agent tripId=${tripId} historyLen=${history.length}`);
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Agent timeout")), AGENT_TIMEOUT_MS).unref(),
+      );
+      const result = await Promise.race([
+        invokeAgentWithFallback(tools, systemPrompt, [...lcHistory, new HumanMessage(content)]),
+        timeout,
+      ]);
+      this.logger.log(`agent done tripId=${tripId} msgCount=${result.messages.length}`);
 
       const lastMsg = result.messages.at(-1);
       reply =
