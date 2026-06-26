@@ -7,6 +7,7 @@ import type { SpeciesToSpot, SafetyItem, PerPlaceNote } from "@trip/shared";
 const TYPE_ICON: Record<string, string> = {
   bird: "🐦", mammal: "🦊", reptile: "🦎", insect: "🐛", amphibian: "🐸", other: "🐾",
 };
+// semantic data-vis colors — exempt from token requirement
 const RISK_COLOR: Record<string, string> = {
   low: "#22c55e", medium: "#f59e0b", high: "#ef4444",
 };
@@ -61,7 +62,7 @@ export function WildlifePage() {
   const data = report?.data;
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: 20, paddingBottom: 48 }}>
       <TripNav id={id} />
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>

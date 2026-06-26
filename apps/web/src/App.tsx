@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useMatch } from "react-router-dom";
 import { Toaster } from "sonner";
 import { TripsPage } from "./routes/TripsPage";
 import { IntakePage } from "./routes/IntakePage";
@@ -7,6 +7,7 @@ import { DiscoverPage } from "./routes/DiscoverPage";
 import { ItineraryPage } from "./routes/ItineraryPage";
 import { WildlifePage } from "./routes/WildlifePage";
 import { WeatherPage } from "./routes/WeatherPage";
+import BuddyBar from "./components/BuddyBar";
 
 function useDarkMode() {
   const [dark, setDark] = useState<boolean>(() => {
@@ -23,6 +24,14 @@ function useDarkMode() {
   return [dark, setDark] as const;
 }
 
+function BuddyRoute() {
+  const matchSub = useMatch("/trips/:id/*");
+  const matchBase = useMatch("/trips/:id");
+  const match = matchSub ?? matchBase;
+  if (!match?.params.id) return null;
+  return <BuddyBar tripId={match.params.id} />;
+}
+
 export default function App() {
   const [dark, setDark] = useDarkMode();
 
@@ -34,7 +43,7 @@ export default function App() {
         title="Toggle dark / light mode"
         style={{
           position: "fixed",
-          bottom: 20,
+          bottom: 60,
           right: 20,
           zIndex: 9999,
           width: 38,
@@ -61,6 +70,7 @@ export default function App() {
         <Route path="/trips/:id/wildlife" element={<WildlifePage />} />
         <Route path="/trips/:id/weather" element={<WeatherPage />} />
       </Routes>
+      <BuddyRoute />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { TripNav } from "../components/TripNav";
 import { toast } from "sonner";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
@@ -10,10 +10,12 @@ const CAT_ICON: Record<string, string> = {
   hike: "🥾", activity: "🎯", museum: "🏛️", beach: "🏖️",
   food: "🍽️", sight: "👁️", other: "📍",
 };
+// semantic data-vis colors — exempt from token requirement
 const CAT_COLOR: Record<string, string> = {
   hike: "#10b981", activity: "#f59e0b", museum: "#8b5cf6", beach: "#06b6d4",
   food: "#ef4444", sight: "#3b82f6", other: "var(--fg-muted)",
 };
+// semantic data-vis colors — exempt from token requirement
 const DIFFICULTY_COLOR: Record<string, string> = {
   easy: "#22c55e", moderate: "#f59e0b", hard: "#ef4444",
 };
@@ -66,14 +68,14 @@ function PlaceCard({ place, selected, onClick, onStatus }: {
             <Badge label={place.category} color={catColor} bg={catColor + "20"} />
             <Badge label={place.difficulty} color={diffColor} bg={diffColor + "20"} />
             {place.weatherDependent && (
-              <Badge label="☔ rain risk" color="#0369a1" bg="#e0f2fe" />
+              <Badge label="☔ rain risk" color="var(--info)" bg="var(--surface-2)" />
             )}
             {place.segment && (
-              <Badge label={`📍 ${place.segment}`} color="#374151" bg="#f1f5f9" />
+              <Badge label={`📍 ${place.segment}`} color="var(--fg)" bg="var(--surface-2)" />
             )}
           </div>
         </div>
-        <div style={{ fontSize: 11, color: "#f59e0b", flexShrink: 0 }}>
+        <div style={{ fontSize: 11, color: "var(--warning)", flexShrink: 0 }}>
           <Stars n={place.kidSuitability} />
         </div>
       </div>
@@ -87,7 +89,7 @@ function PlaceCard({ place, selected, onClick, onStatus }: {
       {place.estDurationMin > 0 && (
         <div style={{ fontSize: 11, color: "var(--fg-subtle)", marginBottom: 6, marginLeft: 26 }}>
           ⏱ ~{place.estDurationMin >= 60 ? `${Math.round(place.estDurationMin / 60)}h` : `${place.estDurationMin}min`}
-          {!place.lat && <span style={{ color: "#f59e0b", marginLeft: 6 }}>⚠ no map pin</span>}
+          {!place.lat && <span style={{ color: "var(--warning)", marginLeft: 6 }}>⚠ no map pin</span>}
         </div>
       )}
 
@@ -99,9 +101,9 @@ function PlaceCard({ place, selected, onClick, onStatus }: {
             onClick={() => onStatus(s)}
             style={{
               padding: "2px 8px", fontSize: 11, borderRadius: 4, cursor: "pointer",
-              border: place.status === s ? "2px solid #333" : "1px solid #ddd",
-              background: place.status === s ? "#333" : "#fafafa",
-              color: place.status === s ? "#fff" : "#555",
+              border: place.status === s ? "2px solid var(--border-strong)" : "1px solid var(--border)",
+              background: place.status === s ? "var(--fg)" : "var(--surface-2)",
+              color: place.status === s ? "var(--card)" : "var(--fg-muted)",
             }}
           >
             {s === "liked" ? "👍" : s === "maybe" ? "🤔" : "👎"} {s}
@@ -160,22 +162,22 @@ function DetailPanel({ place, onClose, onStatus }: {
           {place.estDurationMin > 0 && (
             <Badge
               label={`⏱ ~${place.estDurationMin >= 60 ? `${Math.round(place.estDurationMin / 60)}h` : `${place.estDurationMin}min`}`}
-              color="#4b5563"
-              bg="#f3f4f6"
+              color="var(--fg-muted)"
+              bg="var(--surface-2)"
             />
           )}
         </div>
 
         {/* Kid suitability */}
-        <div style={{ fontSize: 13, marginBottom: 8, color: "#92400e" }}>
-          👨‍👩‍👧 Kid suitability: <span style={{ color: "#f59e0b" }}><Stars n={place.kidSuitability} /></span> {place.kidSuitability}/5
+        <div style={{ fontSize: 13, marginBottom: 8, color: "var(--fg-muted)" }}>
+          👨‍👩‍👧 Kid suitability: <span style={{ color: "var(--warning)" }}><Stars n={place.kidSuitability} /></span> {place.kidSuitability}/5
         </div>
 
         {/* Weather */}
         <div style={{
           fontSize: 13, marginBottom: 12, padding: "8px 10px", borderRadius: 6,
-          background: place.weatherDependent ? "#fef3c7" : "#f0fdf4",
-          color: place.weatherDependent ? "#92400e" : "#166534",
+          background: place.weatherDependent ? "var(--surface-3)" : "var(--surface-2)",
+          color: place.weatherDependent ? "var(--warning)" : "var(--success)",
         }}>
           {place.weatherDependent
             ? "☔ Weather-dependent — best avoided on rainy days"
@@ -206,9 +208,9 @@ function DetailPanel({ place, onClose, onStatus }: {
               onClick={() => onStatus(s)}
               style={{
                 flex: 1, padding: "6px 0", fontSize: 12, borderRadius: 6, cursor: "pointer",
-                border: place.status === s ? "2px solid #333" : "1px solid #ddd",
-                background: place.status === s ? "#333" : "#fafafa",
-                color: place.status === s ? "#fff" : "#555",
+                border: place.status === s ? "2px solid var(--border-strong)" : "1px solid var(--border)",
+                background: place.status === s ? "var(--fg)" : "var(--surface-2)",
+                color: place.status === s ? "var(--card)" : "var(--fg-muted)",
               }}
             >
               {s === "liked" ? "👍 Like" : s === "maybe" ? "🤔 Maybe" : "👎 Pass"}
@@ -219,20 +221,20 @@ function DetailPanel({ place, onClose, onStatus }: {
         {/* External links */}
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <a href={mapsSearch} target="_blank" rel="noreferrer"
-            style={{ fontSize: 12, color: "#2563eb", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+            style={{ fontSize: 12, color: "var(--primary)", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
             🗺 Open in Google Maps
           </a>
           <a href={ytSearch} target="_blank" rel="noreferrer"
-            style={{ fontSize: 12, color: "#dc2626", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+            style={{ fontSize: 12, color: "var(--danger)", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
             ▶ Search on YouTube
           </a>
           <a href={reviewsSearch} target="_blank" rel="noreferrer"
-            style={{ fontSize: 12, color: "#059669", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+            style={{ fontSize: 12, color: "var(--success)", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
             ⭐ Find reviews on TripAdvisor
           </a>
           {place.sourceUrl && (
             <a href={place.sourceUrl} target="_blank" rel="noreferrer"
-              style={{ fontSize: 12, color: "#7c3aed", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+              style={{ fontSize: 12, color: "var(--fg-muted)", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
               🔗 Source article
             </a>
           )}
@@ -243,12 +245,12 @@ function DetailPanel({ place, onClose, onStatus }: {
 }
 
 function PlacePin({ place, selected, onClick }: { place: Place; selected: boolean; onClick: () => void }) {
-  const color = place.status === "liked" ? "#22c55e" : place.status === "rejected" ? "#ef4444" : (CAT_COLOR[place.category] ?? "#3b82f6");
+  const color = place.status === "liked" ? "var(--success)" : place.status === "rejected" ? "var(--danger)" : (CAT_COLOR[place.category] ?? "var(--primary)");
   return (
     <CircleMarker
       center={[place.lat!, place.lng!]}
       radius={selected ? 9 : 7}
-      pathOptions={{ color: "#fff", weight: 2, fillColor: color, fillOpacity: 1 }}
+      pathOptions={{ color: "var(--card)", weight: 2, fillColor: color, fillOpacity: 1 }}
       eventHandlers={{ click: onClick }}
     >
       <Popup>
@@ -314,8 +316,8 @@ export function DiscoverPage() {
           background: "var(--primary-soft)", borderBottom: "1px solid var(--primary-border)",
           padding: "8px 16px", display: "flex", alignItems: "center", gap: 10, fontSize: 13,
         }}>
-          <span style={{ display: "inline-block", width: 14, height: 14, borderRadius: "50%", border: "2px solid #3b82f6", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
-          <span style={{ color: "#1d4ed8" }}>Researching places — searching the web and extracting with AI…</span>
+          <span style={{ display: "inline-block", width: 14, height: 14, borderRadius: "50%", border: "2px solid var(--primary)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+          <span style={{ color: "var(--primary)" }}>Researching places — searching the web and extracting with AI…</span>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
@@ -330,7 +332,7 @@ export function DiscoverPage() {
         <button
           disabled={likedCount === 0}
           onClick={() => navigate(`/trips/${id}/itinerary`)}
-          style={{ padding: "5px 12px", fontSize: 13, background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, cursor: likedCount > 0 ? "pointer" : "not-allowed", opacity: likedCount > 0 ? 1 : 0.5 }}
+          style={{ padding: "5px 12px", fontSize: 13, background: "var(--primary)", color: "var(--primary-fg)", border: "none", borderRadius: 6, cursor: likedCount > 0 ? "pointer" : "not-allowed", opacity: likedCount > 0 ? 1 : 0.5 }}
         >
           Plan itinerary ({likedCount} liked) →
         </button>
@@ -344,8 +346,8 @@ export function DiscoverPage() {
             {CATEGORIES.map((c) => (
               <button key={c} onClick={() => setCatFilter(c)} style={{
                 fontSize: 11, padding: "2px 7px", borderRadius: 10, border: "none", cursor: "pointer",
-                background: catFilter === c ? "#1f2937" : "#f3f4f6",
-                color: catFilter === c ? "#fff" : "#374151",
+                background: catFilter === c ? "var(--fg)" : "var(--surface-2)",
+                color: catFilter === c ? "var(--card)" : "var(--fg)",
               }}>
                 {c === "all" ? "🌍 all" : `${CAT_ICON[c]} ${c}`}
               </button>
@@ -356,8 +358,8 @@ export function DiscoverPage() {
             {STATUS_FILTERS.map((f) => (
               <button key={f} onClick={() => setStatusFilter(f)} style={{
                 fontSize: 11, padding: "2px 7px", borderRadius: 10, border: "none", cursor: "pointer",
-                background: statusFilter === f ? "#374151" : "#f3f4f6",
-                color: statusFilter === f ? "#fff" : "#374151",
+                background: statusFilter === f ? "var(--fg)" : "var(--surface-2)",
+                color: statusFilter === f ? "var(--card)" : "var(--fg)",
               }}>
                 {f === "liked" ? "👍" : f === "maybe" ? "🤔" : f === "rejected" ? "👎" : f === "new" ? "🆕" : "🌍"} {f}
               </button>
@@ -374,8 +376,8 @@ export function DiscoverPage() {
                   style={{
                     fontSize: 11, padding: "2px 8px", borderRadius: 10, border: "none",
                     cursor: "pointer",
-                    background: segFilter === s ? "#0f172a" : "#f3f4f6",
-                    color: segFilter === s ? "#fff" : "#374151",
+                    background: segFilter === s ? "var(--fg)" : "var(--surface-2)",
+                    color: segFilter === s ? "var(--card)" : "var(--fg)",
                     fontWeight: segFilter === s ? 600 : 400,
                   }}
                 >

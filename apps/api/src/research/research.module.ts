@@ -7,5 +7,6 @@ import { IntakeModule } from "../intake/intake.module";
   imports: [IntakeModule],
   providers: [ResearchService],
   controllers: [ResearchController],
+  exports: [ResearchService],
 })
 export class ResearchModule {}
