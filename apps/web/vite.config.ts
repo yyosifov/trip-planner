@@ -5,6 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   envDir: path.resolve(__dirname, '../..'),
+  server: { port: 4000 },
   resolve: {
     alias: {
       '@trip/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
